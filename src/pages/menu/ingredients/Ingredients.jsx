@@ -1,5 +1,5 @@
 import { Plus, AlertTriangle, Edit2, Package } from "lucide-react";
-import { ingredients } from "../../data/mockData";
+import { ingredients } from "../../../data/mockData.js";
 
 export default function Ingredients() {
   const lowStock = ingredients.filter((i) => i.stock <= i.minStock);

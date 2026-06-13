@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Plus, Edit2, Trash2 } from "lucide-react";
-import { categories } from "../../data/mockData";
+import { categories } from "../../../data/mockData.js";
 
 export default function Categories() {
   const [items, setItems] = useState(categories);
