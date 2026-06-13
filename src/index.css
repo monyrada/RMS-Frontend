@@ -1,0 +1,92 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body { @apply bg-cream-50 text-forest-900 font-sans; }
+  * { @apply box-border; }
+  html { scroll-behavior: smooth; }
+}
+
+@layer components {
+  /* ── Admin Sidebar ── */
+  .sidebar-item {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-forest-300 hover:bg-forest-800 hover:text-white transition-all duration-200 cursor-pointer text-sm font-medium;
+  }
+  .sidebar-item.active { @apply bg-forest-700 text-white; }
+  .sidebar-item-sub {
+    @apply flex items-center gap-3 pl-10 pr-4 py-2 rounded-xl text-forest-400 hover:bg-forest-800 hover:text-white transition-all duration-200 cursor-pointer text-sm;
+  }
+  .sidebar-item-sub.active { @apply text-amber-rms font-medium; }
+
+  /* ── Cards ── */
+  .card { @apply bg-white rounded-2xl shadow-sm border border-cream-200 p-5; }
+  .card-hover { @apply bg-white rounded-2xl shadow-sm border border-cream-200 p-5 hover:shadow-md hover:border-forest-300 transition-all duration-200 cursor-pointer; }
+
+  /* ── Buttons ── */
+  .btn-primary { @apply bg-amber-rms hover:bg-amber-light active:scale-95 text-forest-950 font-semibold px-4 py-2 rounded-xl transition-all text-sm; }
+  .btn-secondary { @apply bg-forest-700 hover:bg-forest-600 active:scale-95 text-white font-medium px-4 py-2 rounded-xl transition-all text-sm; }
+  .btn-ghost { @apply hover:bg-cream-100 active:scale-95 text-gray-600 font-medium px-4 py-2 rounded-xl transition-all text-sm; }
+  .btn-danger { @apply bg-red-500 hover:bg-red-600 active:scale-95 text-white font-medium px-4 py-2 rounded-xl transition-all text-sm; }
+
+  /* ── Badges ── */
+  .badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold; }
+
+  /* ── Table ── */
+  .table-th { @apply text-left text-xs font-semibold text-forest-700 uppercase tracking-wider py-3 px-4 bg-cream-50; }
+  .table-td { @apply py-3 px-4 text-sm text-gray-700 border-t border-cream-100; }
+
+  /* ── Form ── */
+  .input { @apply w-full px-4 py-3 rounded-xl bg-cream-50 border border-cream-200 text-sm outline-none focus:border-forest-600 focus:ring-2 focus:ring-forest-600/10 transition-all placeholder:text-gray-400; }
+
+  /* ── Customer ── */
+  .menu-card { @apply bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg hover:border-forest-300 transition-all duration-300 cursor-pointer active:scale-95; }
+  .cart-item { @apply flex items-center gap-3 py-3 border-b border-gray-100 last:border-0; }
+  .qty-btn { @apply w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all active:scale-90; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #9adcb8; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #6dc49a; }
+
+/* Sidebar brand glow */
+.sidebar-brand::before {
+  content: "";
+  position: absolute;
+  top: -20px; right: -20px;
+  width: 120px; height: 120px;
+  background: radial-gradient(circle, rgba(74,168,126,0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Floating cart button pulse */
+@keyframes cart-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232,160,32,0.4); }
+  50% { box-shadow: 0 0 0 10px rgba(232,160,32,0); }
+}
+.cart-pulse { animation: cart-pulse 2s infinite; }
+
+/* Slide up */
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.slide-up { animation: slideUp 0.3s ease-out; }
+
+/* Fade in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeIn 0.4s ease-out; }
+
+/* Hide scrollbar utility */
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Smooth transitions */
+.page-enter { animation: fadeIn 0.3s ease-out; }
