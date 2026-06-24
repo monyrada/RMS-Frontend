@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Search, Edit2, Trash2, Eye, SlidersHorizontal } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, Eye, LayoutGrid, LayoutList } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 import Pagination from "../../../components/shared/pagination";
 import ItemFormDrawer from "../../../components/common/items/ItemFormDrawer.jsx";
@@ -37,6 +38,63 @@ function ItemImage({ imageUrl, size = "sm" }) {
 }
 
 /*
+   Category Filter Pills
+*/
+function CategoryFilter({ categories, active, onChange }) {
+  return (
+      <>
+        {/* Desktop: scrollable pill row */}
+        <div className="hidden md:flex items-center gap-1.5 overflow-x-auto no-scrollbar flex-nowrap pb-0.5">
+          <button
+              onClick={() => onChange(null)}
+              className={`px-3.5 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all shrink-0 ${
+                  active === null
+                      ? "bg-forest-800 text-white shadow-sm"
+                      : "bg-white border border-cream-200 text-gray-600 hover:border-forest-300 hover:text-forest-700"
+              }`}
+          >
+            All
+          </button>
+
+          {categories.map((cat) => (
+              <button
+                  key={cat.id}
+                  onClick={() => onChange(cat.id)}
+                  className={`px-3.5 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all shrink-0 ${
+                      active === cat.id
+                          ? "bg-forest-800 text-white shadow-sm"
+                          : "bg-white border border-cream-200 text-gray-600 hover:border-forest-300 hover:text-forest-700"
+                  }`}
+              >
+                {cat.name}
+              </button>
+          ))}
+        </div>
+
+        {/* Mobile: native select */}
+        <div className="md:hidden relative w-full">
+          <select
+              value={active || ""}
+              onChange={(e) => onChange(e.target.value || null)}
+              className="w-full bg-white border border-cream-200 rounded-xl px-4 py-2.5 text-sm appearance-none focus:outline-none focus:border-forest-400 pr-10"
+          >
+            <option value="">All Categories</option>
+            {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+            ))}
+          </select>
+          <ChevronDown
+              size={16}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+          />
+        </div>
+      </>
+  );
+}
+
+/*
    Mobile Card
 */
 function ItemCard({ item, onView, onEdit, onDelete }) {
@@ -47,43 +105,29 @@ function ItemCard({ item, onView, onEdit, onDelete }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <p className="font-semibold text-forest-900 text-sm truncate">{item.name}</p>
-            <span className={`badge ${getStatusStyle(item.status)}`}>
-            {item.status ? "Available" : "Unavailable"}
-          </span>
+            <span className={`badge shrink-0 ${getStatusStyle(item.status)}`}>
+              {item.status ? "Available" : "Unavailable"}
+            </span>
           </div>
 
           <p className="text-xs text-gray-400 mt-0.5">{item.categoryName}</p>
-          <p className="text-xs text-gray-500 mt-1 truncate">{item.description}</p>
+          <p className="text-xs text-gray-500 mt-1 line-clamp-2">{item.description}</p>
 
           <div className="mt-2">
-          <span className="text-sm font-bold text-forest-800">
-            ${Number(item.price || 0).toFixed(2)}
-          </span>
+            <span className="text-sm font-bold text-forest-800">
+              ${Number(item.price || 0).toFixed(2)}
+            </span>
           </div>
         </div>
 
-        <div className="flex flex-col gap-1">
-          <button
-              onClick={() => onView(item)}
-              className="p-1.5 rounded-lg hover:bg-cream-100"
-              title="View details"
-          >
+        <div className="flex flex-col gap-1 shrink-0">
+          <button onClick={() => onView(item)} className="p-1.5 rounded-lg hover:bg-cream-100" title="View details">
             <Eye size={13} />
           </button>
-
-          <button
-              onClick={() => onEdit(item)}
-              className="p-1.5 rounded-lg hover:bg-cream-100"
-              title="Edit"
-          >
+          <button onClick={() => onEdit(item)} className="p-1.5 rounded-lg hover:bg-cream-100" title="Edit">
             <Edit2 size={13} />
           </button>
-
-          <button
-              onClick={() => onDelete(item)}
-              className="p-1.5 rounded-lg hover:bg-red-50 text-red-500"
-              title="Delete"
-          >
+          <button onClick={() => onDelete(item)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500" title="Delete">
             <Trash2 size={13} />
           </button>
         </div>
@@ -97,41 +141,32 @@ function ItemCard({ item, onView, onEdit, onDelete }) {
 export default function MenuItems() {
   const toast = useToast();
 
-  const [items, setItems]               = useState([]);
-  const [total, setTotal]               = useState(0);
-  const [loading, setLoading]           = useState(true);
-  const [search, setSearch]             = useState("");
-  const [view, setView]                 = useState("table");
-  const [page, setPage]                 = useState(1);
-  const [limit, setLimit]               = useState(10);
-  const [categories, setCategories]     = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [items, setItems]                         = useState([]);
+  const [total, setTotal]                         = useState(0);
+  const [loading, setLoading]                     = useState(true);
+  const [search, setSearch]                       = useState("");
+  const [view, setView]                           = useState("table");
+  const [page, setPage]                           = useState(1);
+  const [limit, setLimit]                         = useState(10);
+  const [categories, setCategories]               = useState([]);
+  const [activeCategoryId, setActiveCategoryId]   = useState(null);
 
-  // Drawer (create / edit)
-  const [drawerOpen, setDrawerOpen]     = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
-
-  // View detail modal
-  const [detailItem, setDetailItem]     = useState(null);
-
-  // Delete confirm
-  const [deleteTarget, setDeleteTarget] = useState(null); // { id, name }
+  const [drawerOpen, setDrawerOpen]       = useState(false);
+  const [selectedItem, setSelectedItem]   = useState(null);
+  const [detailItem, setDetailItem]       = useState(null);
+  const [deleteTarget, setDeleteTarget]   = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  /*
-     Load Menus
-  */
+  /*  Load Menus  */
   const loadMenus = async (currentPage = page, currentLimit = limit) => {
     try {
       setLoading(true);
-
       const response = await getMenus({
         offset: (currentPage - 1) * currentLimit,
         max: currentLimit,
         sort: "name",
         order: "asc",
       });
-
       setItems(response?.data?.data || []);
       setTotal(response?.data?.total || 0);
     } catch (error) {
@@ -142,9 +177,7 @@ export default function MenuItems() {
     }
   };
 
-  /*
-     Load Categories
-  */
+  /*  Load Categories  */
   const loadCategories = async () => {
     try {
       const response = await getCategories();
@@ -157,34 +190,13 @@ export default function MenuItems() {
   useEffect(() => { loadMenus(page, limit); }, [page, limit]);
   useEffect(() => { loadCategories(); }, []);
 
-  /*
-     Drawer Actions
-  */
-  const handleAdd = () => {
-    setSelectedItem(null);
-    setDrawerOpen(true);
-  };
+  /*  Drawer Actions  */
+  const handleAdd = () => { setSelectedItem(null); setDrawerOpen(true); };
+  const handleEdit = (item) => { setSelectedItem(item); setDrawerOpen(true); };
+  const handleCloseDrawer = () => { setDrawerOpen(false); setSelectedItem(null); };
+  const handleView = (item) => setDetailItem(item);
 
-  const handleEdit = (item) => {
-    setSelectedItem(item);
-    setDrawerOpen(true);
-  };
-
-  const handleCloseDrawer = () => {
-    setDrawerOpen(false);
-    setSelectedItem(null);
-  };
-
-  /*
-     View Detail
-  */
-  const handleView = (item) => {
-    setDetailItem(item);
-  };
-
-  /*
-     Save Item
-  */
+  /*  Save Item  */
   const handleSubmit = async (formData) => {
     try {
       if (selectedItem) {
@@ -194,7 +206,6 @@ export default function MenuItems() {
         await createMenu(formData);
         toast.success("Item added", `"${formData.name}" was added to the menu.`);
       }
-
       await loadMenus(page, limit);
       handleCloseDrawer();
     } catch (error) {
@@ -203,25 +214,15 @@ export default function MenuItems() {
     }
   };
 
-  /*
-     Delete — step 1: open confirm dialog
-  */
-  const handleDeleteRequest = (item) => {
-    setDeleteTarget({ id: item.id, name: item.name });
-  };
+  const handleDeleteRequest = (item) => setDeleteTarget({ id: item.id, name: item.name });
 
-  /*
-     Delete — step 2: confirmed
-  */
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
     setDeleteLoading(true);
     try {
       await deleteMenu(deleteTarget.id);
-
       setItems((prev) => prev.filter((i) => i.id !== deleteTarget.id));
       setTotal((prev) => prev - 1);
-
       toast.success("Item deleted", `"${deleteTarget.name}" was removed.`);
     } catch (error) {
       console.error(error);
@@ -232,62 +233,81 @@ export default function MenuItems() {
     }
   };
 
-  /*
-     Search
-  */
+  /*  Filter: search + category  */
   const filtered = useMemo(() => {
     const keyword = search.toLowerCase();
-    return items.filter(
-        (item) =>
-            item.name?.toLowerCase().includes(keyword) ||
-            item.nameKh?.toLowerCase().includes(keyword)
-    );
-  }, [items, search]);
+    return items.filter((item) => {
+      const matchesSearch =
+          item.name?.toLowerCase().includes(keyword) ||
+          item.nameKh?.toLowerCase().includes(keyword);
+      const matchesCategory =
+          activeCategoryId === null || item.categoryId === activeCategoryId;
+      return matchesSearch && matchesCategory;
+    });
+  }, [items, search, activeCategoryId]);
 
   if (loading) {
-    return <div className="card p-8 text-center">Loading menu items...</div>;
+    return <div className="card p-8 text-center text-gray-400">Loading menu items...</div>;
   }
 
   return (
       <>
         <div className="space-y-4 fade-in">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1" />
 
+          {/* ── Top bar ── */}
+          <div className="flex flex-col gap-3">
+
+            {/* Row 1 (mobile): search + view toggle + add */}
             <div className="flex items-center gap-2">
-              <div className="relative">
-                <Search
-                    size={14}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                />
+              {/* Search — grows to fill available space */}
+              <div className="relative flex-1">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search item..."
-                    className="pl-8 pr-3 py-2 rounded-xl bg-white border border-cream-200 text-sm outline-none focus:border-forest-400 w-full sm:w-60"
+                    placeholder="Search items…"
+                    className="w-full pl-8 pr-3 py-2 rounded-xl bg-white border border-cream-200 text-sm outline-none focus:border-forest-400"
                 />
               </div>
 
+              {/* View toggle */}
               <button
                   onClick={() => setView((v) => (v === "table" ? "cards" : "table"))}
-                  className="p-2 rounded-xl bg-white border border-cream-200"
-                  title="Toggle view"
+                  className="p-2 rounded-xl bg-white border border-cream-200 hover:border-forest-300 shrink-0"
+                  title={view === "table" ? "Switch to card view" : "Switch to table view"}
               >
-                <SlidersHorizontal size={15} />
+                {view === "table"
+                    ? <LayoutGrid size={15} />
+                    : <LayoutList size={15} />
+                }
               </button>
 
-              <button onClick={handleAdd} className="btn-primary flex items-center gap-2">
+              {/* Add Item */}
+              <button
+                  onClick={handleAdd}
+                  className="btn-primary flex items-center gap-1.5 shrink-0 whitespace-nowrap"
+              >
                 <Plus size={14} />
-                Add Item
+                <span className="hidden xs:inline">Add Item</span>
+                <span className="xs:hidden">Add</span>
               </button>
             </div>
+
+            {/* Row 2: category filter (full width on mobile via select, pills on md+) */}
+            <CategoryFilter
+                categories={categories}
+                active={activeCategoryId}
+                onChange={(id) => {
+                  setActiveCategoryId(id);
+                  setPage(1);
+                }}
+            />
           </div>
 
-          {/* CARD VIEW */}
+          {/* ── CARD VIEW ── */}
           {view === "cards" ? (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                   {filtered.map((item) => (
                       <ItemCard
                           key={item.id}
@@ -298,6 +318,10 @@ export default function MenuItems() {
                       />
                   ))}
                 </div>
+
+                {filtered.length === 0 && (
+                    <div className="card text-center py-12 text-gray-400">No menu items found.</div>
+                )}
 
                 <Pagination
                     total={total}
@@ -311,13 +335,13 @@ export default function MenuItems() {
               /* TABLE VIEW */
               <div className="card p-0 overflow-hidden">
                 <div className="overflow-x-auto">
-                  <table className="w-full">
+                  <table className="w-full min-w-[600px]">
                     <thead className="border-b border-cream-200">
                     <tr>
                       <th className="table-th w-10"></th>
                       <th className="table-th">Name</th>
-                      <th className="table-th">Category</th>
-                      <th className="table-th">Description</th>
+                      <th className="table-th hidden sm:table-cell">Category</th>
+                      <th className="table-th hidden md:table-cell">Description</th>
                       <th className="table-th text-right">Price</th>
                       <th className="table-th">Status</th>
                       <th className="table-th text-right">Actions</th>
@@ -331,27 +355,32 @@ export default function MenuItems() {
                             <ItemImage imageUrl={item.imageUrl} size="sm" />
                           </td>
 
-                          <td className="table-td font-medium">{item.name}</td>
+                          <td className="table-td font-medium">
+                            <div className="flex flex-col">
+                              <span>{item.name}</span>
+                              {/* Show category inline on small screens */}
+                              <span className="sm:hidden text-xs text-gray-400 mt-0.5">{item.categoryName}</span>
+                            </div>
+                          </td>
 
-                          <td className="table-td">{item.categoryName}</td>
+                          <td className="table-td hidden sm:table-cell">{item.categoryName}</td>
 
-                          <td className="table-td max-w-[250px] truncate">
+                          <td className="table-td hidden md:table-cell max-w-[200px] truncate">
                             {item.description}
                           </td>
 
-                          <td className="table-td text-right font-semibold">
+                          <td className="table-td text-right font-semibold whitespace-nowrap">
                             ${Number(item.price || 0).toFixed(2)}
                           </td>
 
                           <td className="table-td">
-                        <span className={`badge ${getStatusStyle(item.status)}`}>
-                          {item.status ? "Available" : "Unavailable"}
-                        </span>
+                            <span className={`badge whitespace-nowrap ${getStatusStyle(item.status)}`}>
+                              {item.status ? "Available" : "Unavailable"}
+                            </span>
                           </td>
 
                           <td className="table-td">
-                            <div className="flex justify-end gap-2">
-                              {/* View */}
+                            <div className="flex justify-end gap-1.5">
                               <button
                                   onClick={() => handleView(item)}
                                   className="p-1.5 rounded-lg hover:bg-cream-100"
@@ -359,8 +388,6 @@ export default function MenuItems() {
                               >
                                 <Eye size={13} />
                               </button>
-
-                              {/* Edit */}
                               <button
                                   onClick={() => handleEdit(item)}
                                   className="p-1.5 rounded-lg hover:bg-cream-100"
@@ -368,8 +395,6 @@ export default function MenuItems() {
                               >
                                 <Edit2 size={13} />
                               </button>
-
-                              {/* Delete */}
                               <button
                                   onClick={() => handleDeleteRequest(item)}
                                   className="p-1.5 rounded-lg hover:bg-red-50 text-red-500"
@@ -386,9 +411,7 @@ export default function MenuItems() {
                 </div>
 
                 {filtered.length === 0 && (
-                    <div className="text-center py-12 text-gray-400">
-                      No menu items found.
-                    </div>
+                    <div className="text-center py-12 text-gray-400">No menu items found.</div>
                 )}
 
                 <div className="border-t border-cream-200 px-4">
