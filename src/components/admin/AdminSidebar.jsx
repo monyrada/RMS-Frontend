@@ -5,7 +5,7 @@ import {
     CreditCard, Settings, ChevronDown, ChevronRight,
     List, Tag, FlaskConical, Leaf, X,
 } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
+//import { useAuth } from "../../context/AuthContext";
 
 const menuChildren = [
     { label: "Items",       to: "/admin/menu/items",       icon: List },
