@@ -1,25 +1,23 @@
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Search, Edit2, Trash2, Eye, LayoutGrid, LayoutList } from "lucide-react";
-import { ChevronDown } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, Eye, LayoutGrid, LayoutList, ChevronDown } from "lucide-react";
 
-import Pagination from "../../../components/shared/pagination";
-import ItemFormDrawer from "../../../components/common/items/ItemFormDrawer.jsx";
+import Pagination      from "../../../components/shared/pagination";
+import ItemFormDrawer  from "../../../components/common/items/ItemFormDrawer.jsx";
 import ItemDetailModal from "../../../components/common/items/ItemDetailModal.jsx";
-import ConfirmDialog from "../../../components/ui/ConfirmDialog.jsx";
-import { useToast } from "../../../components/ui/Toast.jsx";
+import ConfirmDialog   from "../../../components/ui/ConfirmDialog.jsx";
+import { useToast }    from "../../../components/ui/Toast.jsx";
 
 // Integration API
 import { getMenus, createMenu, updateMenu, deleteMenu } from "../../../api/menu/item.api";
 import { getCategories } from "../../../api/menu/category.api";
 
-const getStatusStyle = (status) =>
+/* ── Helpers ── */
+const statusStyle = (status) =>
     status ? "bg-forest-300/20 text-forest-700" : "bg-red-100 text-red-600";
 
-/*
-   Item Image
-*/
+/* ── Sub-components ── */
 function ItemImage({ imageUrl, size = "sm" }) {
-  const dim = size === "sm" ? "w-8 h-8" : "w-12 h-12";
+  const dim  = size === "sm" ? "w-8 h-8" : "w-12 h-12";
   const text = size === "sm" ? "text-base" : "text-2xl";
 
   if (imageUrl) {
@@ -31,14 +29,15 @@ function ItemImage({ imageUrl, size = "sm" }) {
         />
     );
   }
-
   return (
-      <div className={`${dim} rounded-xl bg-forest-900 flex items-center justify-center ${text} shrink-0`}>🍽️</div>
+      <div className={`${dim} rounded-xl bg-forest-900 flex items-center justify-center ${text} shrink-0`}>
+        🍽️
+      </div>
   );
 }
 
 /*
-   Category Filter Pills
+   Category Filter
 */
 function CategoryFilter({ categories, active, onChange }) {
   return (
@@ -55,7 +54,6 @@ function CategoryFilter({ categories, active, onChange }) {
           >
             All
           </button>
-
           {categories.map((cat) => (
               <button
                   key={cat.id}
@@ -80,9 +78,7 @@ function CategoryFilter({ categories, active, onChange }) {
           >
             <option value="">All Categories</option>
             {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
             ))}
           </select>
           <ChevronDown
@@ -94,9 +90,6 @@ function CategoryFilter({ categories, active, onChange }) {
   );
 }
 
-/*
-   Mobile Card
-*/
 function ItemCard({ item, onView, onEdit, onDelete }) {
   return (
       <div className="card p-4 flex gap-3">
@@ -105,98 +98,83 @@ function ItemCard({ item, onView, onEdit, onDelete }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <p className="font-semibold text-forest-900 text-sm truncate">{item.name}</p>
-            <span className={`badge shrink-0 ${getStatusStyle(item.status)}`}>
-              {item.status ? "Available" : "Unavailable"}
-            </span>
+            <span className={`badge shrink-0 ${statusStyle(item.status)}`}>
+                        {item.status ? "Available" : "Unavailable"}
+                    </span>
           </div>
-
           <p className="text-xs text-gray-400 mt-0.5">{item.categoryName}</p>
           <p className="text-xs text-gray-500 mt-1 line-clamp-2">{item.description}</p>
-
-          <div className="mt-2">
-            <span className="text-sm font-bold text-forest-800">
-              ${Number(item.price || 0).toFixed(2)}
-            </span>
-          </div>
+          <p className="text-sm font-bold text-forest-800 mt-2">
+            ${Number(item.price || 0).toFixed(2)}
+          </p>
         </div>
 
         <div className="flex flex-col gap-1 shrink-0">
-          <button onClick={() => onView(item)} className="p-1.5 rounded-lg hover:bg-cream-100" title="View details">
-            <Eye size={13} />
-          </button>
-          <button onClick={() => onEdit(item)} className="p-1.5 rounded-lg hover:bg-cream-100" title="Edit">
-            <Edit2 size={13} />
-          </button>
-          <button onClick={() => onDelete(item)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500" title="Delete">
-            <Trash2 size={13} />
-          </button>
+          <button onClick={() => onView(item)} className="p-1.5 rounded-lg hover:bg-cream-100" title="View"><Eye size={13} /></button>
+          <button onClick={() => onEdit(item)} className="p-1.5 rounded-lg hover:bg-cream-100" title="Edit"><Edit2 size={13} /></button>
+          <button onClick={() => onDelete(item)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500" title="Delete"><Trash2 size={13} /></button>
         </div>
       </div>
   );
 }
 
-/*
-   Main Component
-*/
+/* ── Main Component ── */
+
 export default function MenuItems() {
   const toast = useToast();
 
-  const [items, setItems]                         = useState([]);
-  const [total, setTotal]                         = useState(0);
-  const [loading, setLoading]                     = useState(true);
-  const [search, setSearch]                       = useState("");
-  const [view, setView]                           = useState("table");
-  const [page, setPage]                           = useState(1);
-  const [limit, setLimit]                         = useState(10);
-  const [categories, setCategories]               = useState([]);
-  const [activeCategoryId, setActiveCategoryId]   = useState(null);
+  const [items,            setItems]           = useState([]);
+  const [total,            setTotal]           = useState(0);
+  const [loading,          setLoading]         = useState(true);
+  const [search,           setSearch]          = useState("");
+  const [view,             setView]            = useState("table");
+  const [page,             setPage]            = useState(1);
+  const [limit,            setLimit]           = useState(10);
+  const [categories,       setCategories]      = useState([]);
+  const [activeCategoryId, setActiveCategoryId]= useState(null);
+  const [drawerOpen,       setDrawerOpen]      = useState(false);
+  const [selectedItem,     setSelectedItem]    = useState(null);
+  const [detailItem,       setDetailItem]      = useState(null);
+  const [deleteTarget,     setDeleteTarget]    = useState(null);
+  const [deleteLoading,    setDeleteLoading]   = useState(false);
 
-  const [drawerOpen, setDrawerOpen]       = useState(false);
-  const [selectedItem, setSelectedItem]   = useState(null);
-  const [detailItem, setDetailItem]       = useState(null);
-  const [deleteTarget, setDeleteTarget]   = useState(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-
-  /*  Load Menus  */
+  /* Load data */
   const loadMenus = async (currentPage = page, currentLimit = limit) => {
     try {
       setLoading(true);
-      const response = await getMenus({
+      const res = await getMenus({
         offset: (currentPage - 1) * currentLimit,
-        max: currentLimit,
-        sort: "name",
-        order: "asc",
+        max:    currentLimit,
+        sort:   "name",
+        order:  "asc",
       });
-      setItems(response?.data?.data || []);
-      setTotal(response?.data?.total || 0);
-    } catch (error) {
-      console.error("Load menu failed:", error);
+      setItems(res?.data?.data  || []);
+      setTotal(res?.data?.total || 0);
+    } catch {
       toast.error("Failed to load", "Could not load menu items.");
     } finally {
       setLoading(false);
     }
   };
 
-  /*  Load Categories  */
   const loadCategories = async () => {
     try {
-      const response = await getCategories();
-      setCategories(response?.data?.data || []);
-    } catch (error) {
-      console.error("Load categories failed", error);
+      const res = await getCategories();
+      setCategories(res?.data?.data || []);
+    } catch {
+      console.error("Load categories failed");
     }
   };
 
   useEffect(() => { loadMenus(page, limit); }, [page, limit]);
-  useEffect(() => { loadCategories(); }, []);
+  useEffect(() => { loadCategories(); },      []);
 
-  /*  Drawer Actions  */
-  const handleAdd = () => { setSelectedItem(null); setDrawerOpen(true); };
-  const handleEdit = (item) => { setSelectedItem(item); setDrawerOpen(true); };
-  const handleCloseDrawer = () => { setDrawerOpen(false); setSelectedItem(null); };
-  const handleView = (item) => setDetailItem(item);
+  /* Handlers */
+  const handleAdd         = ()       => { setSelectedItem(null); setDrawerOpen(true); };
+  const handleEdit        = (item)   => { setSelectedItem(item); setDrawerOpen(true); };
+  const handleCloseDrawer = ()       => { setDrawerOpen(false);  setSelectedItem(null); };
+  const handleView        = (item)   => setDetailItem(item);
 
-  /*  Save Item  */
   const handleSubmit = async (formData) => {
     try {
       if (selectedItem) {
@@ -208,13 +186,13 @@ export default function MenuItems() {
       }
       await loadMenus(page, limit);
       handleCloseDrawer();
-    } catch (error) {
-      console.error(error);
+    } catch {
       toast.error("Save failed", "Please check your inputs and try again.");
     }
   };
 
-  const handleDeleteRequest = (item) => setDeleteTarget({ id: item.id, name: item.name });
+  const handleDeleteRequest = (item) =>
+      setDeleteTarget({ id: item.id, name: item.name });
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
@@ -224,8 +202,7 @@ export default function MenuItems() {
       setItems((prev) => prev.filter((i) => i.id !== deleteTarget.id));
       setTotal((prev) => prev - 1);
       toast.success("Item deleted", `"${deleteTarget.name}" was removed.`);
-    } catch (error) {
-      console.error(error);
+    } catch {
       toast.error("Delete failed", "Could not delete the item. Please try again.");
     } finally {
       setDeleteLoading(false);
@@ -233,21 +210,20 @@ export default function MenuItems() {
     }
   };
 
-  /*  Filter: search + category  */
+  /* Filter */
   const filtered = useMemo(() => {
     const keyword = search.toLowerCase();
     return items.filter((item) => {
-      const matchesSearch =
-          item.name?.toLowerCase().includes(keyword) ||
-          item.nameKh?.toLowerCase().includes(keyword);
-      const matchesCategory =
-          activeCategoryId === null || item.categoryId === activeCategoryId;
-      return matchesSearch && matchesCategory;
+      const matchSearch   = item.name?.toLowerCase().includes(keyword)
+          || item.nameKh?.toLowerCase().includes(keyword);
+      const matchCategory = activeCategoryId === null
+          || item.categoryId === activeCategoryId;
+      return matchSearch && matchCategory;
     });
   }, [items, search, activeCategoryId]);
 
   if (loading) {
-    return <div className="card p-8 text-center text-gray-400">Loading menu items...</div>;
+    return <div className="card p-8 text-center text-gray-400">Loading menu items…</div>;
   }
 
   return (
@@ -256,10 +232,8 @@ export default function MenuItems() {
 
           {/* ── Top bar ── */}
           <div className="flex flex-col gap-3">
-
-            {/* Row 1 (mobile): search + view toggle + add */}
             <div className="flex items-center gap-2">
-              {/* Search — grows to fill available space */}
+              {/* Search */}
               <div className="relative flex-1">
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
@@ -272,24 +246,17 @@ export default function MenuItems() {
 
               {/* View toggle */}
               <button
-                  onClick={() => setView((v) => (v === "table" ? "cards" : "table"))}
+                  onClick={() => setView((v) => v === "table" ? "cards" : "table")}
                   className="p-2 rounded-xl bg-white border border-cream-200 hover:border-forest-300 shrink-0"
                   title={view === "table" ? "Switch to card view" : "Switch to table view"}
               >
-                {view === "table"
-                    ? <LayoutGrid size={15} />
-                    : <LayoutList size={15} />
-                }
+                {view === "table" ? <LayoutGrid size={15} /> : <LayoutList size={15} />}
               </button>
 
-              {/* Add Item */}
-              <button
-                  onClick={handleAdd}
-                  className="btn-primary flex items-center gap-1.5 shrink-0 whitespace-nowrap"
-              >
+              {/* Add */}
+              <button onClick={handleAdd} className="btn-primary flex items-center gap-1.5 shrink-0 whitespace-nowrap">
                 <Plus size={14} />
-                <span className="hidden xs:inline">Add Item</span>
-                <span className="xs:hidden">Add</span>
+                <span>Add Item</span>
               </button>
             </div>
 
@@ -297,14 +264,11 @@ export default function MenuItems() {
             <CategoryFilter
                 categories={categories}
                 active={activeCategoryId}
-                onChange={(id) => {
-                  setActiveCategoryId(id);
-                  setPage(1);
-                }}
+                onChange={(id) => { setActiveCategoryId(id); setPage(1); }}
             />
           </div>
 
-          {/* ── CARD VIEW ── */}
+          {/* ── Card view ── */}
           {view === "cards" ? (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
@@ -332,13 +296,13 @@ export default function MenuItems() {
                 />
               </>
           ) : (
-              /* TABLE VIEW */
+              /* ── Table view ── */
               <div className="card p-0 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[600px]">
                     <thead className="border-b border-cream-200">
                     <tr>
-                      <th className="table-th w-10"></th>
+                      <th className="table-th w-10" />
                       <th className="table-th">Name</th>
                       <th className="table-th hidden sm:table-cell">Category</th>
                       <th className="table-th hidden md:table-cell">Description</th>
@@ -356,16 +320,24 @@ export default function MenuItems() {
                           </td>
 
                           <td className="table-td font-medium">
-                            <div className="flex flex-col">
-                              <span>{item.name}</span>
-                              {/* Show category inline on small screens */}
-                              <span className="sm:hidden text-xs text-gray-400 mt-0.5">{item.categoryName}</span>
-                            </div>
+                            <span className="text-sm text-forest-900">{item.name}</span>
+
+                            {/* Mobile: category under name */}
+                            <span className="sm:hidden block text-xs text-gray-400 mt-0.5">
+                              {item.categoryName}
+                            </span>
+
+                            {/* Mobile + tablet: description under name */}
+                            <span className="md:hidden block text-xs text-gray-400 mt-0.5 truncate max-w-[180px]">
+                              {item.description}
+                            </span>
                           </td>
 
-                          <td className="table-td hidden sm:table-cell">{item.categoryName}</td>
+                          <td className="table-td hidden sm:table-cell text-sm text-gray-600">
+                            {item.categoryName}
+                          </td>
 
-                          <td className="table-td hidden md:table-cell max-w-[200px] truncate">
+                          <td className="table-td hidden md:table-cell text-sm text-gray-500 max-w-[200px] truncate">
                             {item.description}
                           </td>
 
@@ -374,34 +346,16 @@ export default function MenuItems() {
                           </td>
 
                           <td className="table-td">
-                            <span className={`badge whitespace-nowrap ${getStatusStyle(item.status)}`}>
+                            <span className={`badge whitespace-nowrap ${statusStyle(item.status)}`}>
                               {item.status ? "Available" : "Unavailable"}
                             </span>
                           </td>
 
                           <td className="table-td">
                             <div className="flex justify-end gap-1.5">
-                              <button
-                                  onClick={() => handleView(item)}
-                                  className="p-1.5 rounded-lg hover:bg-cream-100"
-                                  title="View details"
-                              >
-                                <Eye size={13} />
-                              </button>
-                              <button
-                                  onClick={() => handleEdit(item)}
-                                  className="p-1.5 rounded-lg hover:bg-cream-100"
-                                  title="Edit"
-                              >
-                                <Edit2 size={13} />
-                              </button>
-                              <button
-                                  onClick={() => handleDeleteRequest(item)}
-                                  className="p-1.5 rounded-lg hover:bg-red-50 text-red-500"
-                                  title="Delete"
-                              >
-                                <Trash2 size={13} />
-                              </button>
+                              <button onClick={() => handleView(item)} className="p-1.5 rounded-lg hover:bg-cream-100" title="View"><Eye size={13} /></button>
+                              <button onClick={() => handleEdit(item)} className="p-1.5 rounded-lg hover:bg-cream-100" title="Edit"><Edit2 size={13} /></button>
+                              <button onClick={() => handleDeleteRequest(item)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500" title="Delete"><Trash2 size={13} /></button>
                             </div>
                           </td>
                         </tr>
@@ -414,6 +368,7 @@ export default function MenuItems() {
                     <div className="text-center py-12 text-gray-400">No menu items found.</div>
                 )}
 
+                {/* ── Pagination ── */}
                 <div className="border-t border-cream-200 px-4">
                   <Pagination
                       total={total}
