@@ -1,5 +1,5 @@
 import { Tag, ToggleLeft, ToggleRight } from "lucide-react";
-import Modal from "../../../modal/Modal.jsx";
+import Modal from "../../../../modal/Modal.jsx";
 
 export default function CategoryDetailModal({
                                                 open,

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Modal from "../../../modal/Modal.jsx";
+import Modal from "../../../../modal/Modal.jsx";
 
 const PRESET_COLORS = [
     "#1a4731", "#2d6a4f", "#40916c",
