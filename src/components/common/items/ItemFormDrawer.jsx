@@ -145,6 +145,7 @@ export default function ItemFormDrawer({ open, onClose, onSubmit, item, categori
        Resets to empty state when adding a new item. */
     useEffect(() => {
         if (!open) return;
+        console.log(item);
         setForm(item ? {
             name:        item.name        ?? "",
             nameKh:      item.nameKh      ?? "",
@@ -155,6 +156,7 @@ export default function ItemFormDrawer({ open, onClose, onSubmit, item, categori
             status:      item.status      ?? true,
         } : EMPTY_FORM);
         setErrors({});
+        
     }, [open, item]);
 
     /* Generic field change handler — clears the field's error on change. */
@@ -242,7 +244,7 @@ export default function ItemFormDrawer({ open, onClose, onSubmit, item, categori
                         >
                             <option value="">Select category</option>
                             {categories.map((c) => (
-                                <option key={c.id} value={c.id}>{c.name}</option>
+                                <option key={c.id} value={c.id} >{c.name}</option>
                             ))}
                         </select>
                     </Field>

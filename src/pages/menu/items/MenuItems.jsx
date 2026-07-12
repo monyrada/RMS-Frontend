@@ -545,6 +545,14 @@ export default function MenuItems() {
             confirmLabel="Yes, delete"
             cancelLabel="Keep it"
         />
+
+        {/* <DeleteConfirmDialog
+            isOpen={open}
+            title="Delete Item"
+            itemName={item.name}
+            onConfirm={() => deleteItem(item.id)}
+            onClose={closeDialog}
+        /> */}
       </>
   );
 }
