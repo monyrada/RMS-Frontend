@@ -13,6 +13,7 @@ const BREADCRUMB_MAP = {
     "/admin/tables":           ["Tables"],
     "/admin/payment":          ["Payment"],
     "/admin/settings":         ["Settings"],
+    "/admin/settings/users":   ["Settings", "Users"],
 };
 
 /* ─── Avatar ─────────────────────────────────────────────────────────────── */
