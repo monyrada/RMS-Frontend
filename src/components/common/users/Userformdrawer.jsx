@@ -269,7 +269,7 @@ export default function UserFormDrawer({ open, onClose, onSubmit, user }) {
                             value={form.username}
                             onChange={setField("username")}
                             disabled={isEdit} // usernames are immutable after creation
-                            placeholder="rada.noy"
+                            placeholder="username"
                             className={inputCls(errors.username, isEdit)}
                         />
                     </Field>
