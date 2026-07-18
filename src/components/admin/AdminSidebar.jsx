@@ -14,7 +14,7 @@ import {
     FlaskConical,
     Leaf,
     X,
-    Users,
+    Users, ShieldCheck,
 } from "lucide-react";
 
 const menuChildren = [
@@ -25,6 +25,7 @@ const menuChildren = [
 
 const settingsChildren = [
     { label: "Users", to: "/admin/settings/users", icon: Users },
+    { label: "Roles", to: "/admin/settings/roles", icon: ShieldCheck },
 ];
 
 const navItems = [

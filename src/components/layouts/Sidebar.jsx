@@ -3,7 +3,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, UtensilsCrossed, ShoppingBag, LayoutGrid,
   CreditCard, Settings, ChevronDown, ChevronRight,
-  List, Tag, FlaskConical, Leaf, Users,
+  List, Tag, FlaskConical, Leaf, Users, ShieldCheck,
 } from "lucide-react";
 
 const menuNav = [
@@ -15,6 +15,7 @@ const menuNav = [
 /* Settings submenu — mirrors menuNav's shape/pattern */
 const settingsNav = [
   { label: "Users", to: "/settings/users", icon: Users },
+  { label: "Roles", to: "/settings/roles", icon: ShieldCheck },
 ];
 
 const navItems = [

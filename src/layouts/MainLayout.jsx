@@ -12,6 +12,7 @@ const PAGE_META = {
   "/payment":          { title: "Payments",    subtitle: "Transaction history" },
   "/settings":         { title: "Settings",    subtitle: "Restaurant configuration" },
   "/settings/users":   { title: "Settings",    subtitle: "User management" },
+  "/settings/roles":   { title: "Settings",    subtitle: "Role management" },
 };
 
 const DEFAULT_META = { title: "RMS", subtitle: "" };
