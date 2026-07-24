@@ -13,6 +13,8 @@ const BREADCRUMB_MAP = {
     "/admin/tables":           ["Tables"],
     "/admin/payment":          ["Payment"],
     "/admin/settings":         ["Settings"],
+    "/admin/settings/users":   ["Settings", "Users"],
+    "/admin/settings/roles":   ["Settings", "Roles"],
 };
 
 /* ─── Avatar ─────────────────────────────────────────────────────────────── */
@@ -39,7 +41,7 @@ function ProfileDropdown({ onClose }) {
 
     const items = [
         { icon: <User size={13} />,     label: "Profile",  action: () => navigate("/admin/settings") },
-        { icon: <Settings size={13} />, label: "Settings", action: () => navigate("/admin/settings") },
+        //{ icon: <Settings size={13} />, label: "Settings", action: () => navigate("/admin/settings") },
     ];
 
     const handleLogout = () => {

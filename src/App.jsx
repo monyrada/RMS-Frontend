@@ -14,6 +14,8 @@ import Orders from "./pages/orders/Orders";
 import Tables from "./pages/tables/Tables";
 import Payment from "./pages/payment/Payment";
 import Settings from "./pages/settings/Settings";
+import Users from "./pages/settings/users/User-management.jsx"
+import Roles from "./pages/settings/roles/RoleManagement.jsx";
 
 // Customer
 import CustomerWelcome from "./pages/customer/CustomerWelcome";
@@ -53,6 +55,8 @@ export default function App() {
               <Route path="tables" element={<Tables />} />
               <Route path="payment" element={<Payment />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="settings/users" element={<Users />} />
+              <Route path="settings/roles" element={<Roles />} />
             </Route>
 
             {/* Fallback */}
