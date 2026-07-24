@@ -108,7 +108,7 @@ export default function IngredientFormDrawer({ open, onClose, onSubmit, ingredie
                     <textarea
                         value={form.description}
                         onChange={(e) => set("description", e.target.value)}
-                        placeholder="e.g. Measured in kilograms (kg). Mozzarella cheese used for pizza and burgers."
+                        placeholder="e.g. Measured in kilograms (kg)."
                         rows={2}
                         className="w-full px-3 py-2.5 text-sm rounded-lg border border-cream-200 focus:ring-2 focus:ring-forest-400/20 focus:border-forest-400 outline-none transition-colors resize-none"
                     />
@@ -147,7 +147,7 @@ export default function IngredientFormDrawer({ open, onClose, onSubmit, ingredie
             <div className="px-6 py-4 border-t border-cream-200 bg-cream-50 rounded-b-xl flex justify-end gap-3">
                 <button
                     onClick={onClose}
-                    disabled={loading}s
+                    disabled={loading}
                     className="px-4 py-2 text-sm font-medium rounded-lg border border-cream-200 text-gray-700 hover:bg-cream-100 transition-colors disabled:opacity-50"
                 >
                     Cancel
