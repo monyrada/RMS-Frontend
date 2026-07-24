@@ -1,109 +1,94 @@
-import { Package, DollarSign, AlertTriangle, ToggleLeft, ToggleRight, FileText } from "lucide-react";
 import Modal from "../../../modal/Modal.jsx";
+import { Edit2, Package, Clock } from "lucide-react";
 
-function StockBar({ current, min }) {
-    const max = Math.max(current, min * 3, 1);
-    const pct = Math.min((current / max) * 100, 100);
-    const isLow = current <= min;
+const STATUS_STYLES = {
+    IN_STOCK:     { label: "In Stock",     badge: "bg-forest-300/20 text-forest-700" },
+    LOW_STOCK:    { label: "Low Stock",    badge: "bg-amber-100 text-amber-700"      },
+    OUT_OF_STOCK: { label: "Out of Stock", badge: "bg-red-100 text-red-600"          },
+};
 
+const statusStyle = (s) => STATUS_STYLES[s]?.badge ?? "bg-gray-100 text-gray-600";
+const statusLabel = (s) => STATUS_STYLES[s]?.label ?? s ?? "Unknown";
+
+function formatDate(iso) {
+    if (!iso) return "—";
+    return new Date(iso).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+    });
+}
+
+function Row({ label, children }) {
     return (
-        <div>
-            <div className="flex justify-between text-xs text-gray-400 mb-1.5">
-                <span>Stock level</span>
-                <span className={isLow ? "text-amber-500 font-medium" : "text-gray-500"}>
-          {current} / min {min}
-        </span>
-            </div>
-            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div
-                    className={`h-full rounded-full transition-all ${isLow ? "bg-amber-400" : "bg-[#1a4731]"}`}
-                    style={{ width: `${pct}%` }}
-                />
-            </div>
-            {isLow && (
-                <p className="text-xs text-amber-600 mt-1.5 flex items-center gap-1">
-                    <AlertTriangle size={11} /> Stock is below minimum threshold
-                </p>
-            )}
+        <div className="flex items-center justify-between py-2.5 border-b border-cream-100 last:border-0">
+            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{label}</span>
+            <span className="text-sm text-forest-900 font-medium text-right">{children}</span>
         </div>
     );
 }
 
-export default function IngredientDetailModal({
-                                                  open,
-                                                  onClose,
-                                                  ingredient,
-                                                  onEdit,
-                                              }) {
+export default function IngredientDetailModal({ open, onClose, ingredient, onEdit }) {
     if (!ingredient) return null;
 
-    return (
-        <Modal
-            open={open}
-            onClose={onClose}
-            title={ingredient.name}
-            subtitle={`Measured in ${ingredient.unit}`}
-            size="sm"
-        >
-            <div className="px-6 py-5 space-y-5">
-                <StockBar current={ingredient.stockQuantity} min={ingredient.minStockLevel} />
+    const { name, nameKh, description, unit, stockStatus, createdAt, updatedAt } = ingredient;
 
-                {/* Stats */}
-                <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-gray-50 rounded-xl p-4">
-                        <div className="text-gray-400 mb-1"><Package size={15} /></div>
-                        <p className="text-xs text-gray-500">Current stock</p>
-                        <p className="text-lg font-semibold text-gray-900 mt-0.5">
-                            {ingredient.stockQuantity}{" "}
-                            <span className="text-sm text-gray-400">{ingredient.unit}</span>
-                        </p>
+    return (
+        <Modal open={open} onClose={onClose} title="Ingredient details" size="md">
+            <div className="px-6 py-5 space-y-5">
+                {/* Header */}
+                <div className="flex items-start gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-forest-900 flex items-center justify-center shrink-0">
+                        <Package size={20} className="text-cream-100" />
                     </div>
-                    <div className="bg-gray-50 rounded-xl p-4">
-                        <div className="text-[#1a4731] mb-1"><DollarSign size={15} /></div>
-                        <p className="text-xs text-gray-500">Cost per unit</p>
-                        <p className="text-lg font-semibold text-gray-900 mt-0.5">
-                            ${ingredient.costPerUnit.toFixed(2)}
-                        </p>
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-semibold text-forest-900 text-base truncate">{name}</h3>
+                            {nameKh && <span className="text-sm text-gray-400">({nameKh})</span>}
+                        </div>
+                        <div className="mt-1.5">
+              <span className={`badge text-xs ${statusStyle(stockStatus)}`}>
+                {statusLabel(stockStatus)}
+              </span>
+                        </div>
                     </div>
                 </div>
 
-                {/* Notes */}
-                {ingredient.notes && (
-                    <div className="bg-gray-50 rounded-lg px-4 py-3">
-                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                            <FileText size={11} /> Notes
-                        </p>
-                        <p className="text-sm text-gray-600 leading-relaxed">{ingredient.notes}</p>
-                    </div>
+                {/* Description */}
+                {description && (
+                    <p className="text-sm text-gray-600 leading-relaxed">{description}</p>
                 )}
 
-                {/* Status */}
-                <div className="flex items-center justify-between py-3 border-t border-gray-100">
-                    <span className="text-sm text-gray-600 font-medium">Status</span>
-                    <span
-                        className={`inline-flex items-center gap-1.5 text-sm font-medium ${
-                            ingredient.isActive ? "text-emerald-600" : "text-gray-400"
-                        }`}
-                    >
-            {ingredient.isActive ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
-                        {ingredient.isActive ? "Active" : "Inactive"}
-          </span>
+                {/* Detail rows */}
+                <div>
+                    <Row label="Unit">{unit ?? "—"}</Row>
+                </div>
+
+                {/* Timestamps */}
+                <div className="flex items-center gap-1.5 text-xs text-gray-400 pt-1">
+                    <Clock size={12} />
+                    <span>Created {formatDate(createdAt)}</span>
+                    {updatedAt && updatedAt !== createdAt && (
+                        <span>· Updated {formatDate(updatedAt)}</span>
+                    )}
                 </div>
             </div>
 
-            {onEdit && (
-                <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-xl flex justify-end">
-                    <button
-                        onClick={() => { onClose(); onEdit(ingredient); }}
-                        className="px-5 py-2 text-sm font-medium rounded-lg text-white transition-colors"
-                        style={{ backgroundColor: "#1a4731" }}
-                        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#153d29")}
-                        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#1a4731")}
-                    >
-                        Edit ingredient
-                    </button>
-                </div>
-            )}
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-cream-200 bg-cream-50 rounded-b-xl flex justify-end gap-3">
+                <button
+                    onClick={onClose}
+                    className="px-4 py-2 text-sm font-medium rounded-lg border border-cream-200 text-gray-700 hover:bg-cream-100 transition-colors"
+                >
+                    Close
+                </button>
+                <button
+                    onClick={() => onEdit?.(ingredient)}
+                    className="btn-primary px-5 py-2 text-sm flex items-center gap-1.5"
+                >
+                    <Edit2 size={13} /> Edit
+                </button>
+            </div>
         </Modal>
     );
 }
