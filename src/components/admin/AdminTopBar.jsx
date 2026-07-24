@@ -41,7 +41,7 @@ function ProfileDropdown({ onClose }) {
 
     const items = [
         { icon: <User size={13} />,     label: "Profile",  action: () => navigate("/admin/settings") },
-        { icon: <Settings size={13} />, label: "Settings", action: () => navigate("/admin/settings") },
+        //{ icon: <Settings size={13} />, label: "Settings", action: () => navigate("/admin/settings") },
     ];
 
     const handleLogout = () => {
