@@ -1,17 +1,12 @@
 import { useState, useEffect } from "react";
 import Modal from "../../../../modal/Modal.jsx";
 
-const PRESET_COLORS = [
-    "#1a4731", "#2d6a4f", "#40916c",
-    "#e76f51", "#f4a261", "#e9c46a",
-    "#264653", "#457b9d", "#6d6875",
-];
-
 const defaultForm = {
+    code: "",
     name: "",
+    nameKh: "",
     description: "",
-    color: "#1a4731",
-    isActive: true,
+    status: true,
 };
 
 export default function CategoryFormModal({
@@ -30,10 +25,11 @@ export default function CategoryFormModal({
             setForm(
                 initial
                     ? {
-                        name: initial.name,
+                        code: initial.code ?? "",
+                        name: initial.name ?? "",
+                        nameKh: initial.nameKh ?? "",
                         description: initial.description ?? "",
-                        color: initial.color ?? "#1a4731",
-                        isActive: initial.isActive,
+                        status: initial.status ?? true,
                     }
                     : defaultForm
             );
@@ -45,6 +41,12 @@ export default function CategoryFormModal({
         const errs = {};
         if (!form.name.trim()) errs.name = "Category name is required.";
         else if (form.name.length > 50) errs.name = "Name must be 50 characters or fewer.";
+
+        if (!form.code.trim()) errs.code = "Code is required.";
+        else if (!/^[A-Z0-9_-]+$/i.test(form.code.trim())) {
+            errs.code = "Code can only contain letters, numbers, - and _.";
+        }
+
         return errs;
     }
 
@@ -53,7 +55,7 @@ export default function CategoryFormModal({
         if (Object.keys(errs).length > 0) { setErrors(errs); return; }
         setLoading(true);
         try {
-            await onSubmit(form);
+            await onSubmit({ ...form, code: form.code.trim().toUpperCase() });
             onClose();
         } finally {
             setLoading(false);
@@ -71,23 +73,57 @@ export default function CategoryFormModal({
             size="md"
         >
             <div className="px-6 py-5 space-y-5">
-                {/* Name */}
+                {/* Name + Code */}
+                <div className="grid grid-cols-3 gap-3">
+                    <div className="col-span-2">
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                            Name <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            value={form.name}
+                            onChange={(e) => set("name", e.target.value)}
+                            placeholder="e.g. Appetizers"
+                            className={`w-full px-3 py-2.5 text-sm rounded-lg border transition-colors outline-none focus:ring-2 ${
+                                errors.name
+                                    ? "border-red-300 focus:ring-red-100"
+                                    : "border-gray-200 focus:ring-[#1a4731]/20 focus:border-[#1a4731]"
+                            }`}
+                        />
+                        {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                            Code <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            value={form.code}
+                            onChange={(e) => set("code", e.target.value)}
+                            placeholder="APP"
+                            className={`w-full px-3 py-2.5 text-sm rounded-lg border uppercase transition-colors outline-none focus:ring-2 ${
+                                errors.code
+                                    ? "border-red-300 focus:ring-red-100"
+                                    : "border-gray-200 focus:ring-[#1a4731]/20 focus:border-[#1a4731]"
+                            }`}
+                        />
+                        {errors.code && <p className="text-xs text-red-500 mt-1">{errors.code}</p>}
+                    </div>
+                </div>
+
+                {/* Khmer name */}
                 <div>
                     <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-                        Name <span className="text-red-400">*</span>
+                        Khmer name <span className="text-gray-400 font-normal">(optional)</span>
                     </label>
                     <input
                         type="text"
-                        value={form.name}
-                        onChange={(e) => set("name", e.target.value)}
-                        placeholder="e.g. Main Course"
-                        className={`w-full px-3 py-2.5 text-sm rounded-lg border transition-colors outline-none focus:ring-2 ${
-                            errors.name
-                                ? "border-red-300 focus:ring-red-100"
-                                : "border-gray-200 focus:ring-[#1a4731]/20 focus:border-[#1a4731]"
-                        }`}
+                        value={form.nameKh}
+                        onChange={(e) => set("nameKh", e.target.value)}
+                        placeholder="ម្ហូបបើកចំណង់"
+                        className="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#1a4731]/20 focus:border-[#1a4731] outline-none transition-colors"
                     />
-                    {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
                 </div>
 
                 {/* Description */}
@@ -105,36 +141,6 @@ export default function CategoryFormModal({
                     />
                 </div>
 
-                {/* Color */}
-                <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-2">
-                        Color label
-                    </label>
-                    <div className="flex items-center gap-2 flex-wrap">
-                        {PRESET_COLORS.map((c) => (
-                            <button
-                                key={c}
-                                type="button"
-                                onClick={() => set("color", c)}
-                                className="w-7 h-7 rounded-full border-2 transition-all"
-                                style={{
-                                    backgroundColor: c,
-                                    borderColor: form.color === c ? "#111" : "transparent",
-                                    transform: form.color === c ? "scale(1.15)" : "scale(1)",
-                                }}
-                                aria-label={`Color ${c}`}
-                            />
-                        ))}
-                        <input
-                            type="color"
-                            value={form.color}
-                            onChange={(e) => set("color", e.target.value)}
-                            className="w-7 h-7 rounded-full cursor-pointer border border-gray-200"
-                            title="Custom color"
-                        />
-                    </div>
-                </div>
-
                 {/* Status toggle */}
                 <div className="flex items-center justify-between py-3 border-t border-gray-100">
                     <div>
@@ -146,15 +152,15 @@ export default function CategoryFormModal({
                     <button
                         type="button"
                         role="switch"
-                        aria-checked={form.isActive}
-                        onClick={() => set("isActive", !form.isActive)}
+                        aria-checked={form.status}
+                        onClick={() => set("status", !form.status)}
                         className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                            form.isActive ? "bg-[#1a4731]" : "bg-gray-200"
+                            form.status ? "bg-[#1a4731]" : "bg-gray-200"
                         }`}
                     >
             <span
                 className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${
-                    form.isActive ? "translate-x-[18px]" : "translate-x-[2px]"
+                    form.status ? "translate-x-[18px]" : "translate-x-[2px]"
                 }`}
             />
                     </button>

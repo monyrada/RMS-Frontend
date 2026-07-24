@@ -1,11 +1,10 @@
-import { Tag, ToggleLeft, ToggleRight } from "lucide-react";
+import { Tag, Hash, ToggleLeft, ToggleRight } from "lucide-react";
 import Modal from "../../../../modal/Modal.jsx";
 
 export default function CategoryDetailModal({
                                                 open,
                                                 onClose,
                                                 category,
-                                                itemCount = 0,
                                                 onEdit,
                                             }) {
     if (!category) return null;
@@ -13,19 +12,26 @@ export default function CategoryDetailModal({
     return (
         <Modal open={open} onClose={onClose} title="Category details" size="sm">
             <div className="px-6 py-5 space-y-5">
-                {/* Color swatch + name */}
+                {/* Avatar (initial) + name */}
                 <div className="flex items-center gap-3">
-                    <div
-                        className="w-10 h-10 rounded-full flex-shrink-0 shadow-sm"
-                        style={{ backgroundColor: category.color ?? "#1a4731" }}
-                    />
-                    <div>
-                        <p className="font-semibold text-gray-900">{category.name}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">
-                            {itemCount} item{itemCount !== 1 ? "s" : ""}
-                        </p>
+                    <div className="w-10 h-10 rounded-full flex-shrink-0 shadow-sm bg-[#1a4731] text-white flex items-center justify-center font-semibold">
+                        {category.name?.charAt(0)?.toUpperCase() ?? "?"}
+                    </div>
+                    <div className="min-w-0">
+                        <p className="font-semibold text-gray-900 truncate">{category.name}</p>
+                        {category.nameKh && (
+                            <p className="text-xs text-gray-400 mt-0.5">{category.nameKh}</p>
+                        )}
                     </div>
                 </div>
+
+                {/* Code */}
+                {category.code && (
+                    <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                        <Hash size={11} />
+                        <span className="font-mono tracking-wide">{category.code}</span>
+                    </div>
+                )}
 
                 {/* Description */}
                 {category.description && (
@@ -33,7 +39,9 @@ export default function CategoryDetailModal({
                         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
                             <Tag size={11} /> Description
                         </p>
-                        <p className="text-sm text-gray-600 leading-relaxed">{category.description}</p>
+                        <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
+                            {category.description}
+                        </p>
                     </div>
                 )}
 
@@ -42,11 +50,11 @@ export default function CategoryDetailModal({
                     <span className="text-sm text-gray-600 font-medium">Status</span>
                     <span
                         className={`inline-flex items-center gap-1.5 text-sm font-medium ${
-                            category.isActive ? "text-emerald-600" : "text-gray-400"
+                            category.status ? "text-emerald-600" : "text-gray-400"
                         }`}
                     >
-            {category.isActive ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
-                        {category.isActive ? "Active" : "Inactive"}
+            {category.status ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+                        {category.status ? "Active" : "Inactive"}
           </span>
                 </div>
             </div>

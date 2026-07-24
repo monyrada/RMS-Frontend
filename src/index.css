@@ -9,6 +9,11 @@
   html { scroll-behavior: smooth; }
 }
 
+/* global.css / index.css */
+body {
+  font-family: 'Inter', 'Battambang', system-ui, sans-serif;
+}
+
 @layer components {
   /* ── Admin Sidebar ── */
   .sidebar-item {
