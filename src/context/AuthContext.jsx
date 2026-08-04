@@ -1,41 +1,54 @@
 import { createContext, useContext, useState } from "react";
+import * as authApi from "../api/Auth.api.js";
 
 const AuthContext = createContext(null);
 
-// Fake credentials — swap with real API call
-const ADMIN_USERS = [
-  { id: 1, name: "Admin", email: "admin@rms.com", password: "admin123", role: "admin", avatar: "A" },
-  { id: 2, name: "Manager", email: "manager@rms.com", password: "manager123", role: "manager", avatar: "M" },
-];
-
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    try { return JSON.parse(sessionStorage.getItem("rms_user")) || null; }
-    catch { return null; }
+    try {
+      return JSON.parse(sessionStorage.getItem("rms_user")) || null;
+    } catch {
+      return null;
+    }
   });
 
-  const login = (email, password) => {
-    const found = ADMIN_USERS.find(
-      (u) => u.email === email && u.password === password
-    );
-    if (found) {
-      const { password: _, ...safe } = found;
-      setUser(safe);
-      sessionStorage.setItem("rms_user", JSON.stringify(safe));
-      return { ok: true, user: safe };
+  const login = async (email, password) => {
+    try {
+      const { data: body } = await authApi.login(email, password);
+      const { accessToken, refreshToken, user: apiUser } = body.data;
+
+      localStorage.setItem("access_token", accessToken);
+      localStorage.setItem("refresh_token", refreshToken);
+      setUser(apiUser);
+      sessionStorage.setItem("rms_user", JSON.stringify(apiUser));
+
+      return { ok: true, user: apiUser };
+    } catch (err) {
+      const message =
+          err.response?.data?.message ||
+          (err.response?.status === 401
+              ? "Invalid email or password."
+              : "Something went wrong. Please try again.");
+      return { ok: false, error: message };
     }
-    return { ok: false, error: "Invalid email or password." };
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await authApi.logout();
+    } catch {
+      // ignore network errors on logout — clear local state regardless
+    }
     setUser(null);
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
     sessionStorage.removeItem("rms_user");
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
+      <AuthContext.Provider value={{ user, login, logout }}>
+        {children}
+      </AuthContext.Provider>
   );
 }
 
