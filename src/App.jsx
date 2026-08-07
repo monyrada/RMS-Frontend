@@ -17,6 +17,9 @@ import Settings from "./pages/settings/Settings";
 import Users from "./pages/settings/users/User-management.jsx"
 import Roles from "./pages/settings/roles/RoleManagement.jsx";
 
+// User Profile
+import UserProfile from "./pages/profile/UserProfile.jsx"
+
 // Customer
 import CustomerWelcome from "./pages/customer/CustomerWelcome";
 import CustomerMenu from "./pages/customer/CustomerMenu";
@@ -57,6 +60,7 @@ export default function App() {
               <Route path="settings" element={<Settings />} />
               <Route path="settings/users" element={<Users />} />
               <Route path="settings/roles" element={<Roles />} />
+              <Route path="profile" element={<UserProfile />} />
             </Route>
 
             {/* Fallback */}

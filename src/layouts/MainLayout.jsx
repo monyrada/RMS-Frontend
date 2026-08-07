@@ -11,8 +11,8 @@ const PAGE_META = {
   "/tables":           { title: "Table Layout",subtitle: "Floor plan and table status" },
   "/payment":          { title: "Payments",    subtitle: "Transaction history" },
   "/settings":         { title: "Settings",    subtitle: "Restaurant configuration" },
-  "/settings/users":   { title: "Settings",    subtitle: "User management" },
-  "/settings/roles":   { title: "Settings",    subtitle: "Role management" },
+  "/settings/users":   { title: "Users",       subtitle: "User management" },
+  "/settings/roles":   { title: "Roles",       subtitle: "Role management" }
 };
 
 const DEFAULT_META = { title: "RMS", subtitle: "" };
