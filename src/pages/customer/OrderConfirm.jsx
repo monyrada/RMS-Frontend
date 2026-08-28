@@ -1,13 +1,61 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { CheckCircle, Clock, ChefHat, Bell } from "lucide-react";
+import {
+  Beef,
+  Bell,
+  CakeSlice,
+  CheckCircle,
+  ChefHat,
+  Clock,
+  Fish,
+  GlassWater,
+  Leaf,
+  Salad,
+  Sandwich,
+  Soup,
+  Sparkles,
+  Utensils,
+  Wheat,
+} from "lucide-react";
 import { useCart } from "../../context/CartContext";
 
 const steps = [
-  { icon: CheckCircle, label: "Order Received", done: true, time: "Just now" },
-  { icon: ChefHat, label: "Kitchen Preparing", done: false, time: "~15 min" },
-  { icon: Bell, label: "Ready to Serve", done: false, time: "Pending" },
+  { icon: CheckCircle, label: "Order Received", time: "Just now" },
+  { icon: ChefHat, label: "Kitchen Preparing", time: "~15 min" },
+  { icon: Bell, label: "Ready to Serve", time: "Pending" },
 ];
+
+const iconMap = {
+  Beef,
+  CakeSlice,
+  Dessert: CakeSlice,
+  Fish,
+  GlassWater,
+  Leaf,
+  Milk: GlassWater,
+  Salad,
+  Sandwich,
+  Soup,
+  Sparkles,
+  Utensils,
+  Wheat,
+};
+
+function SummaryIcon({ item }) {
+  const Icon = iconMap[item.icon] || Utensils;
+
+  return (
+    <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${item.accent || "from-cream-100 to-forest-300/30"}`}>
+      <Icon size={15} className="text-forest-800" />
+    </span>
+  );
+}
+
+function KhmerText({ children, className = "" }) {
+  if (!children) return null;
+
+  return <p className={`font-sans leading-relaxed ${className}`}>{children}</p>;
+}
 
 export default function OrderConfirm() {
   const { cart, dispatch, total } = useCart();
@@ -17,10 +65,9 @@ export default function OrderConfirm() {
   const [orderId] = useState(() => `#ORD-${Math.floor(1000 + Math.random() * 9000)}`);
   const [currentStep, setCurrentStep] = useState(0);
 
-  // Simulate order progress
   useEffect(() => {
-    const t = setTimeout(() => setCurrentStep(1), 3000);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setCurrentStep(1), 3000);
+    return () => clearTimeout(timer);
   }, []);
 
   const tax = total * 0.1;
@@ -32,78 +79,74 @@ export default function OrderConfirm() {
   };
 
   return (
-    <div className="min-h-screen bg-cream-50 flex flex-col">
-      {/* Success hero */}
-      <div className="bg-forest-900 px-6 pt-12 pb-10 text-center">
-        <div className="w-20 h-20 bg-forest-700 rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl">
-          <CheckCircle size={40} className="text-forest-400" strokeWidth={1.5} />
+    <div className="min-h-screen bg-cream-50">
+      <section className="bg-forest-900 px-6 pb-9 pt-12 text-center text-white">
+        <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-forest-800 shadow-xl">
+          <CheckCircle size={40} className="text-forest-300" strokeWidth={1.7} />
         </div>
-        <h1 className="text-2xl font-black text-white mb-1">Order Placed! 🎉</h1>
-        <p className="text-forest-400 text-sm mb-4">
-          {tableId ? `Table ${tableId} — ` : ""}{orderId}
+        <h1 className="mb-1 text-2xl font-black">Order Placed</h1>
+        <p className="mb-4 text-sm text-forest-400">
+          {tableId ? `Table ${tableId} | ` : ""}
+          {orderId}
         </p>
-        <div className="inline-flex items-center gap-2 bg-forest-800 px-4 py-2 rounded-xl">
+        <div className="inline-flex items-center gap-2 rounded-xl bg-forest-800 px-4 py-2">
           <Clock size={14} className="text-amber-rms" />
-          <span className="text-white text-sm font-medium">Est. wait: ~15 minutes</span>
+          <span className="text-sm font-medium">Est. wait: ~15 minutes</span>
         </div>
-      </div>
+      </section>
 
-      <div className="flex-1 px-4 sm:px-6 py-5 max-w-lg mx-auto w-full">
-        {/* Progress */}
-        <div className="card mb-4">
-          <h3 className="font-bold text-forest-900 mb-4">Order Status</h3>
+      <main className="mx-auto w-full max-w-lg px-4 py-5 sm:px-6">
+        <section className="card mb-4">
+          <h3 className="mb-4 font-bold text-forest-900">Order Status</h3>
           <div className="space-y-4">
-            {steps.map((step, i) => {
-              const active = i <= currentStep;
+            {steps.map((step, index) => {
+              const active = index <= currentStep;
+              const Icon = step.icon;
+
               return (
                 <div key={step.label} className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-all duration-500 ${active ? "bg-forest-700" : "bg-cream-100"}`}>
-                    <step.icon size={18} className={active ? "text-white" : "text-gray-400"} />
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all duration-500 ${active ? "bg-forest-700" : "bg-cream-100"}`}>
+                    <Icon size={18} className={active ? "text-white" : "text-gray-400"} />
                   </div>
                   <div className="flex-1">
                     <p className={`text-sm font-semibold ${active ? "text-forest-900" : "text-gray-400"}`}>{step.label}</p>
                     <p className="text-xs text-gray-400">{step.time}</p>
                   </div>
-                  {active && i === currentStep && (
-                    <div className="w-2 h-2 bg-forest-500 rounded-full animate-pulse" />
-                  )}
+                  {active && index === currentStep && <div className="h-2 w-2 rounded-full bg-forest-500" />}
                 </div>
               );
             })}
           </div>
-        </div>
+        </section>
 
-        {/* Order summary */}
-        <div className="card mb-4">
-          <h3 className="font-bold text-forest-900 mb-3">Your Items</h3>
-          <div className="space-y-2">
+        <section className="card mb-4">
+          <h3 className="mb-3 font-bold text-forest-900">Your Items</h3>
+          <div className="space-y-3">
             {cart.items.map((item) => (
-              <div key={item.id} className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="text-base">{item.emoji}</span>
-                  <span className="text-gray-700">{item.name}</span>
-                  <span className="text-gray-400">×{item.qty}</span>
+              <div key={item.id} className="flex items-center justify-between gap-3 text-sm">
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <SummaryIcon item={item} />
+                  <div className="min-w-0">
+                    <p className="truncate text-gray-700">{item.name}</p>
+                    <KhmerText className="truncate text-xs font-semibold text-forest-700">{item.nameKh}</KhmerText>
+                    <p className="text-xs text-gray-400">Qty {item.qty}</p>
+                  </div>
                 </div>
-                <span className="font-semibold text-forest-900">${(item.price * item.qty).toFixed(2)}</span>
+                <span className="shrink-0 font-semibold text-forest-900">${(item.price * item.qty).toFixed(2)}</span>
               </div>
             ))}
-            {cart.note && (
-              <p className="text-xs text-gray-400 mt-2 italic border-t border-cream-100 pt-2">Note: {cart.note}</p>
-            )}
-            <div className="border-t border-cream-100 pt-2 flex justify-between font-black text-forest-900">
+            {cart.note && <p className="border-t border-cream-100 pt-3 text-xs leading-relaxed text-gray-500">Note: {cart.note}</p>}
+            <div className="flex justify-between border-t border-cream-100 pt-3 font-black text-forest-900">
               <span>Total</span>
               <span>${grandTotal.toFixed(2)}</span>
             </div>
           </div>
-        </div>
+        </section>
 
-        <button
-          onClick={handleNewOrder}
-          className="w-full btn-secondary py-3.5 text-base rounded-2xl"
-        >
+        <button onClick={handleNewOrder} className="btn-secondary w-full rounded-xl py-3.5 text-base">
           Order More Items
         </button>
-      </div>
+      </main>
     </div>
   );
 }

@@ -1,7 +1,58 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ChevronLeft, Plus, Minus, Trash2, ShoppingBag, MessageSquare, ChevronRight } from "lucide-react";
+import {
+  Beef,
+  CakeSlice,
+  ChevronLeft,
+  ChevronRight,
+  Fish,
+  GlassWater,
+  Leaf,
+  MessageSquare,
+  Minus,
+  Plus,
+  Salad,
+  Sandwich,
+  ShoppingBag,
+  Soup,
+  Sparkles,
+  Trash2,
+  Utensils,
+  Wheat,
+} from "lucide-react";
 import { useCart } from "../../context/CartContext";
+
+const iconMap = {
+  Beef,
+  CakeSlice,
+  Dessert: CakeSlice,
+  Fish,
+  GlassWater,
+  Leaf,
+  Milk: GlassWater,
+  Salad,
+  Sandwich,
+  Soup,
+  Sparkles,
+  Utensils,
+  Wheat,
+};
+
+function CartItemIcon({ item }) {
+  const Icon = iconMap[item.icon] || Utensils;
+
+  return (
+    <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${item.accent || "from-cream-100 to-forest-300/30"}`}>
+      <Icon size={22} className="text-forest-800" strokeWidth={1.8} />
+    </div>
+  );
+}
+
+function KhmerText({ children, className = "" }) {
+  if (!children) return null;
+
+  return <p className={`font-sans leading-relaxed ${className}`}>{children}</p>;
+}
 
 export default function CustomerCart() {
   const { cart, dispatch, total, count } = useCart();
@@ -23,113 +74,112 @@ export default function CustomerCart() {
 
   if (count === 0) {
     return (
-      <div className="min-h-screen bg-cream-50 flex flex-col items-center justify-center px-6 text-center">
-        <div className="text-6xl mb-4">🛒</div>
-        <h2 className="text-xl font-bold text-forest-900 mb-2">Your cart is empty</h2>
-        <p className="text-gray-500 text-sm mb-6">Add some dishes from our menu to get started.</p>
-        <button onClick={() => navigate(-1)} className="btn-secondary">Browse Menu</button>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-cream-50 px-6 text-center">
+        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm">
+          <ShoppingBag size={28} className="text-forest-700" />
+        </div>
+        <h2 className="mb-2 text-xl font-bold text-forest-900">Your cart is empty</h2>
+        <p className="mb-6 max-w-xs text-sm text-gray-500">Add dishes from the menu before placing an order.</p>
+        <button onClick={() => navigate(-1)} className="btn-secondary">
+          Browse Menu
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-cream-50 flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-30 bg-white border-b border-cream-200 px-4 sm:px-6 py-4">
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="text-gray-400 hover:text-forest-700 transition-colors">
+    <div className="min-h-screen bg-cream-50">
+      <header className="sticky top-0 z-30 border-b border-cream-200 bg-white/95 px-4 py-4 shadow-sm backdrop-blur sm:px-6">
+        <div className="mx-auto flex max-w-lg items-center gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-cream-100 hover:text-forest-700"
+            aria-label="Go back"
+          >
             <ChevronLeft size={20} />
           </button>
-          <h1 className="font-black text-forest-900 text-lg flex-1">Your Order</h1>
-          {tableId && (
-            <span className="text-xs bg-forest-100 text-forest-700 px-2.5 py-1 rounded-full font-semibold">
-              Table {tableId}
-            </span>
-          )}
+          <div className="flex-1">
+            <h1 className="text-lg font-black text-forest-900">Your Order</h1>
+            <p className="text-xs text-gray-500">{count} item{count > 1 ? "s" : ""} selected</p>
+          </div>
+          {tableId && <span className="rounded-lg bg-forest-100 px-2.5 py-2 text-xs font-bold text-forest-700">Table {tableId}</span>}
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto">
-        {/* Items */}
-        <div className="px-4 sm:px-6 py-4 max-w-lg mx-auto w-full">
-          <div className="card mb-4">
-            {cart.items.map((item) => (
-              <div key={item.id} className="cart-item">
-                <div className="w-12 h-12 bg-forest-900 rounded-xl flex items-center justify-center text-2xl shrink-0">
-                  {item.emoji}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-forest-900 text-sm truncate">{item.name}</p>
-                  <p className="text-gray-400 text-xs">${item.price.toFixed(2)} each</p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <button onClick={() => handleQty(item.id, item.qty - 1)} className="qty-btn bg-cream-100 text-forest-700 hover:bg-cream-200">
-                    <Minus size={12} />
-                  </button>
-                  <span className="w-6 text-center font-black text-sm">{item.qty}</span>
-                  <button onClick={() => handleQty(item.id, item.qty + 1)} className="qty-btn bg-forest-700 text-white hover:bg-forest-600">
-                    <Plus size={12} />
-                  </button>
-                  <button onClick={() => handleRemove(item.id)} className="ml-1 text-gray-300 hover:text-red-400 transition-colors">
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-                <div className="w-14 text-right shrink-0">
-                  <p className="font-bold text-forest-900 text-sm">${(item.price * item.qty).toFixed(2)}</p>
-                </div>
+      <main className="mx-auto w-full max-w-lg px-4 py-4 pb-28 sm:px-6">
+        <section className="card mb-4 p-4">
+          {cart.items.map((item) => (
+            <div key={item.id} className="cart-item">
+              <CartItemIcon item={item} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-forest-900">{item.name}</p>
+                <KhmerText className="truncate text-xs font-semibold text-forest-700">{item.nameKh}</KhmerText>
+                <p className="text-xs text-gray-500">${item.price.toFixed(2)} each</p>
               </div>
-            ))}
-          </div>
-
-          {/* Note */}
-          <div className="card mb-4">
-            <div className="flex items-center gap-2 mb-2">
-              <MessageSquare size={15} className="text-forest-500" />
-              <span className="font-semibold text-forest-900 text-sm">Special Instructions</span>
-            </div>
-            <textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Allergies, dietary needs, special requests…"
-              rows={3}
-              className="w-full px-3 py-2.5 rounded-xl bg-cream-50 border border-cream-200 text-sm resize-none outline-none focus:border-forest-400 placeholder:text-gray-400 transition-colors"
-            />
-          </div>
-
-          {/* Summary */}
-          <div className="card">
-            <h3 className="font-bold text-forest-900 mb-3">Order Summary</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between text-gray-600">
-                <span>Subtotal ({count} items)</span>
-                <span>${total.toFixed(2)}</span>
+              <div className="flex shrink-0 items-center gap-1.5">
+                <button onClick={() => handleQty(item.id, item.qty - 1)} className="qty-btn bg-cream-100 text-forest-700 hover:bg-cream-200" aria-label="Decrease quantity">
+                  <Minus size={12} />
+                </button>
+                <span className="w-6 text-center text-sm font-black">{item.qty}</span>
+                <button onClick={() => handleQty(item.id, item.qty + 1)} className="qty-btn bg-forest-700 text-white hover:bg-forest-600" aria-label="Increase quantity">
+                  <Plus size={12} />
+                </button>
+                <button onClick={() => handleRemove(item.id)} className="ml-1 rounded-lg p-2 text-gray-300 transition-colors hover:bg-red-50 hover:text-red-500" aria-label="Remove item">
+                  <Trash2 size={15} />
+                </button>
               </div>
-              <div className="flex justify-between text-gray-600">
-                <span>Tax (10%)</span>
-                <span>${tax.toFixed(2)}</span>
-              </div>
-              <div className="border-t border-cream-200 pt-2 flex justify-between font-black text-forest-900 text-base">
-                <span>Total</span>
-                <span>${grandTotal.toFixed(2)}</span>
+              <div className="w-16 shrink-0 text-right">
+                <p className="text-sm font-bold text-forest-900">${(item.price * item.qty).toFixed(2)}</p>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
+          ))}
+        </section>
 
-      {/* Place Order */}
-      <div className="sticky bottom-0 bg-white border-t border-cream-200 px-4 sm:px-6 py-4">
-        <div className="max-w-lg mx-auto">
+        <section className="card mb-4">
+          <div className="mb-2 flex items-center gap-2">
+            <MessageSquare size={15} className="text-forest-500" />
+            <span className="text-sm font-semibold text-forest-900">Special Instructions</span>
+          </div>
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Allergies, dietary needs, or kitchen notes"
+            rows={3}
+            className="input resize-none"
+          />
+        </section>
+
+        <section className="card">
+          <h3 className="mb-3 font-bold text-forest-900">Order Summary</h3>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between text-gray-600">
+              <span>Subtotal ({count} items)</span>
+              <span>${total.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-gray-600">
+              <span>Tax (10%)</span>
+              <span>${tax.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between border-t border-cream-200 pt-2 text-base font-black text-forest-900">
+              <span>Total</span>
+              <span>${grandTotal.toFixed(2)}</span>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <div className="fixed inset-x-0 bottom-0 border-t border-cream-200 bg-white/95 px-4 py-4 backdrop-blur sm:px-6">
+        <div className="mx-auto max-w-lg">
           <button
             onClick={handlePlaceOrder}
-            className="w-full flex items-center justify-between bg-forest-900 hover:bg-forest-800 active:scale-95 text-white px-6 py-4 rounded-2xl transition-all font-semibold"
+            className="flex w-full items-center justify-between rounded-xl bg-forest-900 px-6 py-4 font-semibold text-white transition-all hover:bg-forest-800 active:scale-[0.99]"
           >
             <div className="flex items-center gap-2">
               <ShoppingBag size={18} />
               <span>Place Order</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-amber-rms font-black">${grandTotal.toFixed(2)}</span>
+              <span className="font-black text-amber-rms">${grandTotal.toFixed(2)}</span>
               <ChevronRight size={16} className="text-forest-500" />
             </div>
           </button>

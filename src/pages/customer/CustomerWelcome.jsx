@@ -1,7 +1,7 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { useCart } from "../../context/CartContext";
-import { Leaf, QrCode, ArrowRight, Clock, Star, Wifi, ChefHat } from "lucide-react";
 import { useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { ArrowRight, ChefHat, Clock, Leaf, QrCode, Star, Utensils, Wifi } from "lucide-react";
+import { useCart } from "../../context/CartContext";
 
 export default function CustomerWelcome() {
   const navigate = useNavigate();
@@ -11,84 +11,89 @@ export default function CustomerWelcome() {
 
   useEffect(() => {
     if (tableId) dispatch({ type: "SET_TABLE", tableId });
-  }, []);
+  }, [dispatch, tableId]);
 
   return (
-    <div className="min-h-screen bg-forest-950 flex flex-col">
-      {/* Header */}
-      <header className="px-6 pt-10 pb-4 max-w-lg mx-auto w-full">
-        <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-forest-950 text-white">
+      <header className="mx-auto w-full max-w-lg px-6 pb-4 pt-8">
+        <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-amber-rms rounded-xl flex items-center justify-center shadow-lg shadow-amber-rms/30">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-rms shadow-lg shadow-amber-rms/20">
               <Leaf size={20} className="text-forest-950" strokeWidth={2.5} />
             </div>
             <div>
-              <p className="text-white font-bold text-base leading-none">The Green Table</p>
-              <p className="text-forest-400 text-xs">Restaurant & Bar</p>
+              <p className="text-base font-bold leading-none">The Green Table</p>
+              <p className="text-xs text-forest-400">Restaurant & Bar</p>
             </div>
           </div>
-          <a href="/admin/login" className="text-forest-500 hover:text-forest-400 text-xs transition-colors">Staff →</a>
+          <a href="/admin/login" className="text-xs font-medium text-forest-400 transition-colors hover:text-white">
+            Staff
+          </a>
         </div>
       </header>
 
-      {/* Hero */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-6 text-center max-w-lg mx-auto w-full">
-        {/* Animated dish */}
-        <div className="relative mb-6">
-          <div className="w-24 h-24 bg-forest-800 rounded-3xl flex items-center justify-center text-6xl shadow-2xl">🍽️</div>
-          <div className="absolute -top-2 -right-2 w-8 h-8 bg-amber-rms rounded-full flex items-center justify-center">
-            <ChefHat size={14} className="text-forest-950" />
+      <main className="mx-auto flex min-h-[calc(100vh-88px)] w-full max-w-lg flex-col px-6 pb-8">
+        <section className="flex flex-1 flex-col justify-center py-8">
+          <div className="relative mb-7 h-40 overflow-hidden rounded-2xl border border-forest-800 bg-forest-900 shadow-2xl shadow-black/20">
+            <div className="absolute left-5 top-5 flex h-14 w-14 items-center justify-center rounded-xl bg-forest-800">
+              <ChefHat size={26} className="text-forest-300" />
+            </div>
+            <div className="absolute bottom-5 right-5 flex h-24 w-24 items-center justify-center rounded-full bg-cream-50 shadow-xl">
+              <Utensils size={42} className="text-forest-800" strokeWidth={1.6} />
+            </div>
+            <div className="absolute bottom-5 left-5">
+              <p className="text-xs font-semibold uppercase tracking-wider text-amber-rms">Table ordering</p>
+              <p className="mt-1 max-w-[190px] text-sm leading-relaxed text-forest-300">Fresh dishes sent directly to the kitchen.</p>
+            </div>
           </div>
-        </div>
 
-        <h1 className="text-3xl sm:text-4xl font-black text-white mb-3 leading-tight">
-          Ready to order?<br />
-          <span className="text-amber-rms">We've got you.</span>
-        </h1>
-        <p className="text-forest-400 text-base mb-6 leading-relaxed max-w-xs">
-          Browse our full menu, customize your order, and we'll serve it fresh to your table.
-        </p>
+          <h1 className="text-3xl font-black leading-tight sm:text-4xl">
+            Browse, order, and relax at your table.
+          </h1>
+          <p className="mt-3 max-w-sm text-base leading-relaxed text-forest-300">
+            Choose from the full menu, add notes for the kitchen, and keep your order connected to the right table.
+          </p>
 
-        {/* Table indicator */}
-        {tableId ? (
-          <div className="mb-6 flex items-center gap-2 bg-forest-800 border border-forest-700 px-4 py-3 rounded-2xl">
-            <div className="w-2 h-2 bg-forest-400 rounded-full animate-pulse"></div>
-            <span className="text-forest-300 text-sm">Table <strong className="text-white">{tableId}</strong> — ready to order</span>
-          </div>
-        ) : (
-          <div className="mb-6 flex items-center gap-2 bg-amber-rms/10 border border-amber-rms/30 px-4 py-3 rounded-2xl max-w-xs">
-            <QrCode size={16} className="text-amber-rms shrink-0" />
-            <span className="text-amber-300 text-sm text-left">Scan the QR code on your table to link your order</span>
-          </div>
-        )}
+          {tableId ? (
+            <div className="mt-6 flex items-center gap-2 rounded-xl border border-forest-700 bg-forest-900 px-4 py-3">
+              <div className="h-2 w-2 rounded-full bg-forest-300" />
+              <span className="text-sm text-forest-300">
+                Table <strong className="text-white">{tableId}</strong> is ready.
+              </span>
+            </div>
+          ) : (
+            <div className="mt-6 flex items-center gap-3 rounded-xl border border-amber-rms/30 bg-amber-rms/10 px-4 py-3">
+              <QrCode size={17} className="shrink-0 text-amber-rms" />
+              <span className="text-sm text-amber-100">Scan the QR code on your table to link an order.</span>
+            </div>
+          )}
 
-        <button
-          onClick={() => navigate(`/menu${tableId ? `?table=${tableId}` : ""}`)}
-          className="flex items-center gap-3 bg-amber-rms hover:bg-amber-light active:scale-95 text-forest-950 font-black text-base px-8 py-4 rounded-2xl transition-all shadow-xl shadow-amber-rms/30 cart-pulse mb-3"
-        >
-          Browse Menu <ArrowRight size={20} />
-        </button>
-        <p className="text-forest-600 text-xs">No account needed · Order in seconds</p>
-      </div>
+          <button
+            onClick={() => navigate(`/menu${tableId ? `?table=${tableId}` : ""}`)}
+            className="mt-6 flex w-full items-center justify-center gap-3 rounded-xl bg-amber-rms px-8 py-4 text-base font-black text-forest-950 shadow-xl shadow-amber-rms/20 transition-all hover:bg-amber-light active:scale-[0.99]"
+          >
+            Browse Menu
+            <ArrowRight size={20} />
+          </button>
+          <p className="mt-3 text-center text-xs text-forest-500">No account needed. Order in seconds.</p>
+        </section>
 
-      {/* Stats bar */}
-      <div className="max-w-lg mx-auto w-full px-6 pb-10">
-        <div className="grid grid-cols-3 gap-3">
+        <section className="grid grid-cols-3 gap-3">
           {[
-            { icon: Clock, label: "Fast Service", sub: "~15 min avg" },
-            { icon: Star, label: "Top Rated", sub: "4.8 / 5.0" },
-            { icon: Wifi, label: "Free Wi-Fi", sub: "GreenTable5G" },
+            { icon: Clock, label: "Fast", sub: "~15 min" },
+            { icon: Star, label: "Rated", sub: "4.8 / 5" },
+            { icon: Wifi, label: "Wi-Fi", sub: "Free" },
           ].map(({ icon: Icon, label, sub }) => (
-            <div key={label} className="bg-forest-900 rounded-2xl p-3 text-center">
-              <div className="w-8 h-8 bg-forest-800 rounded-xl flex items-center justify-center mx-auto mb-2">
-                <Icon size={14} className="text-forest-400" />
+            <div key={label} className="rounded-xl border border-forest-800 bg-forest-900 p-3 text-center">
+              <div className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-forest-800">
+                <Icon size={14} className="text-forest-300" />
               </div>
-              <p className="text-white text-xs font-semibold">{label}</p>
-              <p className="text-forest-500 text-xs">{sub}</p>
+              <p className="text-xs font-semibold">{label}</p>
+              <p className="text-xs text-forest-500">{sub}</p>
             </div>
           ))}
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
   );
 }

@@ -46,9 +46,9 @@ body {
   .input { @apply w-full px-4 py-3 rounded-xl bg-cream-50 border border-cream-200 text-sm outline-none focus:border-forest-600 focus:ring-2 focus:ring-forest-600/10 transition-all placeholder:text-gray-400; }
 
   /* ── Customer ── */
-  .menu-card { @apply bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg hover:border-forest-300 transition-all duration-300 cursor-pointer active:scale-95; }
-  .cart-item { @apply flex items-center gap-3 py-3 border-b border-gray-100 last:border-0; }
-  .qty-btn { @apply w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all active:scale-90; }
+  .menu-card { @apply bg-white rounded-xl overflow-hidden shadow-sm border border-cream-200 hover:shadow-md hover:border-forest-300 transition-all duration-200 cursor-pointer active:scale-[0.98]; }
+  .cart-item { @apply flex items-center gap-3 py-3 border-b border-cream-100 last:border-0; }
+  .qty-btn { @apply w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm transition-all active:scale-90; }
 }
 
 /* Scrollbar */

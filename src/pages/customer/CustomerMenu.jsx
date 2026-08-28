@@ -1,41 +1,216 @@
-import { useState, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ShoppingCart, Plus, Minus, Search, X, ChevronLeft, Star, Clock, Flame } from "lucide-react";
+import {
+  Beef,
+  CakeSlice,
+  ChevronLeft,
+  Clock,
+  Flame,
+  Fish,
+  GlassWater,
+  Leaf,
+  Milk,
+  Minus,
+  Plus,
+  Salad,
+  Sandwich,
+  Search,
+  ShoppingCart,
+  Soup,
+  Sparkles,
+  Star,
+  Utensils,
+  Wheat,
+  X,
+} from "lucide-react";
 import { useCart } from "../../context/CartContext";
-import { customerCategories, customerMenuItems } from "../../data/customerData";
+import { getCategories } from "../../api/menu/category.api";
+import { getMenus } from "../../api/menu/item.api";
+
+const DEBOUNCE_MS = 300;
+
+const iconMap = {
+  Beef,
+  CakeSlice,
+  Dessert: CakeSlice,
+  Fish,
+  GlassWater,
+  Leaf,
+  Milk,
+  Salad,
+  Sandwich,
+  Soup,
+  Sparkles,
+  Utensils,
+  Wheat,
+};
+
+const categoryIconMap = [
+  { keywords: ["drink", "beverage", "coffee", "tea", "juice", "water"], icon: "GlassWater" },
+  { keywords: ["dessert", "cake", "sweet", "pastry"], icon: "CakeSlice" },
+  { keywords: ["starter", "salad", "appetizer"], icon: "Salad" },
+  { keywords: ["special", "chef"], icon: "Sparkles" },
+  { keywords: ["beef", "steak", "main"], icon: "Beef" },
+];
+
+const itemVisualMap = [
+  { keywords: ["salmon", "fish", "seafood"], icon: "Fish", accent: "from-sky-100 to-emerald-100" },
+  { keywords: ["salad", "vegetable"], icon: "Salad", accent: "from-lime-100 to-forest-300/40" },
+  { keywords: ["burger", "sandwich"], icon: "Sandwich", accent: "from-amber-100 to-orange-100" },
+  { keywords: ["cake", "tiramisu", "dessert", "chocolate"], icon: "CakeSlice", accent: "from-rose-100 to-stone-100" },
+  { keywords: ["drink", "mojito", "juice", "water", "coffee", "tea"], icon: "GlassWater", accent: "from-cyan-100 to-lime-100" },
+  { keywords: ["soup", "tom yum"], icon: "Soup", accent: "from-red-100 to-amber-100" },
+  { keywords: ["mushroom", "risotto", "rice"], icon: "Wheat", accent: "from-cream-200 to-lime-100" },
+  { keywords: ["special", "platter", "chef"], icon: "Sparkles", accent: "from-amber-100 to-forest-300/30" },
+  { keywords: ["roll", "herb"], icon: "Leaf", accent: "from-green-100 to-amber-100" },
+  { keywords: ["beef", "steak"], icon: "Beef", accent: "from-amber-100 to-orange-100" },
+];
+
+function pickCategoryIcon(category) {
+  const text = `${category?.name || ""} ${category?.code || ""}`.toLowerCase();
+  return categoryIconMap.find((entry) => entry.keywords.some((keyword) => text.includes(keyword)))?.icon || "Utensils";
+}
+
+function pickItemVisual(item) {
+  const text = `${item?.name || ""} ${item?.categoryName || ""} ${item?.description || ""}`.toLowerCase();
+  return itemVisualMap.find((entry) => entry.keywords.some((keyword) => text.includes(keyword))) || { icon: "Utensils", accent: "from-cream-200 to-forest-300/30" };
+}
+
+function normalizeItem(item) {
+  const visual = pickItemVisual(item);
+
+  return {
+    ...item,
+    id: item.id,
+    name: item.name || "Untitled item",
+    nameKh: item.nameKh || "",
+    description: item.description || "No description available.",
+    descriptionKh: item.descriptionKh || "",
+    categoryName: item.categoryName || "",
+    categoryNameKh: item.categoryNameKh || "",
+    price: Number(item.price || 0),
+    time: item.preparationTime || item.time || "15 min",
+    popular: Boolean(item.popular || item.isPopular),
+    spicy: Boolean(item.spicy || item.isSpicy),
+    icon: item.icon || visual.icon,
+    accent: item.accent || visual.accent,
+    status: item.status,
+  };
+}
+
+function normalizeCategory(category) {
+  return {
+    ...category,
+    id: category.id,
+    label: category.name || "Untitled",
+    labelKh: category.nameKh || "",
+    icon: pickCategoryIcon(category),
+  };
+}
+
+function FoodVisual({ item, size = "md" }) {
+  const Icon = iconMap[item.icon] || Utensils;
+  const visualSize = size === "lg" ? "h-28" : "h-32";
+  const iconSize = size === "lg" ? 42 : 34;
+
+  if (item.imageUrl) {
+    return (
+      <div className={`${visualSize} bg-cream-100`}>
+        <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
+      </div>
+    );
+  }
+
+  return (
+    <div className={`${visualSize} bg-gradient-to-br ${item.accent} relative flex items-center justify-center`}>
+      <div className="absolute inset-x-4 top-4 h-px bg-white/70" />
+      <div className="rounded-full bg-white/80 p-4 shadow-sm ring-1 ring-white">
+        <Icon size={iconSize} className="text-forest-800" strokeWidth={1.7} />
+      </div>
+    </div>
+  );
+}
+
+function ItemTags({ item }) {
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <span className="inline-flex items-center gap-1 rounded-full bg-cream-50 px-2 py-1 text-xs font-medium text-gray-500">
+        <Clock size={11} />
+        {item.time}
+      </span>
+      {item.popular && (
+        <span className="inline-flex items-center gap-1 rounded-full bg-amber-rms/15 px-2 py-1 text-xs font-semibold text-amber-700">
+          <Star size={11} className="fill-amber-rms text-amber-rms" />
+          Popular
+        </span>
+      )}
+      {item.spicy && (
+        <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-1 text-xs font-semibold text-red-600">
+          <Flame size={11} />
+          Spicy
+        </span>
+      )}
+    </div>
+  );
+}
+
+function KhmerText({ children, className = "" }) {
+  if (!children) return null;
+
+  return <p className={`font-sans leading-relaxed ${className}`}>{children}</p>;
+}
 
 function ItemModal({ item, qty, onAdd, onRemove, onClose }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-      <div className="relative bg-white w-full sm:max-w-md sm:rounded-3xl rounded-t-3xl p-6 slide-up z-10" onClick={(e) => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-cream-100 flex items-center justify-center text-gray-500 hover:bg-cream-200">
-          <X size={16} />
+    <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-forest-950/55 backdrop-blur-sm" />
+      <div
+        className="slide-up relative z-10 w-full overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:max-w-md sm:rounded-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-lg bg-white/90 text-gray-500 shadow-sm transition-colors hover:bg-cream-100"
+          aria-label="Close item details"
+        >
+          <X size={17} />
         </button>
-        <div className="w-20 h-20 bg-gradient-to-br from-forest-900 to-forest-800 rounded-2xl flex items-center justify-center text-5xl mb-4">
-          {item.emoji}
-        </div>
-        <div className="flex items-start justify-between gap-3 mb-2">
-          <h2 className="text-xl font-black text-forest-900">{item.name}</h2>
-          <span className="text-xl font-black text-forest-700 shrink-0">${item.price.toFixed(2)}</span>
-        </div>
-        <div className="flex items-center gap-3 mb-3">
-          <div className="flex items-center gap-1"><Clock size={12} className="text-gray-400" /><span className="text-xs text-gray-400">{item.time}</span></div>
-          {item.popular && <div className="flex items-center gap-1"><Star size={12} className="text-amber-400 fill-amber-400" /><span className="text-xs text-amber-600 font-semibold">Popular</span></div>}
-          {item.spicy && <div className="flex items-center gap-1"><Flame size={12} className="text-red-400" /><span className="text-xs text-red-500 font-semibold">Spicy</span></div>}
-        </div>
-        <p className="text-gray-500 text-sm leading-relaxed mb-5">{item.description}</p>
-        {qty === 0 ? (
-          <button onClick={() => { onAdd(item); onClose(); }} className="w-full bg-forest-700 hover:bg-forest-600 active:scale-95 text-white font-bold py-3.5 rounded-2xl transition-all flex items-center justify-center gap-2">
-            <Plus size={18} /> Add to Order
-          </button>
-        ) : (
-          <div className="flex items-center justify-between bg-forest-50 rounded-2xl p-2">
-            <button onClick={() => onRemove(item.id)} className="w-11 h-11 rounded-xl bg-white border border-forest-200 text-forest-700 hover:bg-forest-100 flex items-center justify-center active:scale-90 transition-all"><Minus size={16} /></button>
-            <span className="font-black text-forest-900 text-xl">{qty}</span>
-            <button onClick={() => onAdd(item)} className="w-11 h-11 rounded-xl bg-forest-700 text-white hover:bg-forest-600 flex items-center justify-center active:scale-90 transition-all"><Plus size={16} /></button>
+        <FoodVisual item={item} size="lg" />
+        <div className="p-5">
+          <div className="mb-3 flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-black leading-tight text-forest-900">{item.name}</h2>
+              <KhmerText className="mt-1 text-sm font-semibold text-forest-700">{item.nameKh}</KhmerText>
+              <p className="mt-1 text-sm leading-relaxed text-gray-500">{item.description}</p>
+              <KhmerText className="mt-1 text-sm text-gray-500">{item.descriptionKh}</KhmerText>
+            </div>
+            <span className="shrink-0 text-xl font-black text-forest-700">${item.price.toFixed(2)}</span>
           </div>
-        )}
+          <ItemTags item={item} />
+
+          {qty === 0 ? (
+            <button
+              onClick={() => {
+                onAdd(item);
+                onClose();
+              }}
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-forest-700 py-3.5 font-bold text-white transition-all hover:bg-forest-600 active:scale-[0.98]"
+            >
+              <Plus size={18} />
+              Add to Order
+            </button>
+          ) : (
+            <div className="mt-5 flex items-center justify-between rounded-xl bg-cream-50 p-2">
+              <button onClick={() => onRemove(item.id)} className="qty-btn bg-white text-forest-700 shadow-sm hover:bg-cream-100" aria-label="Decrease quantity">
+                <Minus size={16} />
+              </button>
+              <span className="text-xl font-black text-forest-900">{qty}</span>
+              <button onClick={() => onAdd(item)} className="qty-btn bg-forest-700 text-white hover:bg-forest-600" aria-label="Increase quantity">
+                <Plus size={16} />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -43,142 +218,345 @@ function ItemModal({ item, qty, onAdd, onRemove, onClose }) {
 
 function ItemCard({ item, qty, onAdd, onRemove, onOpen }) {
   return (
-    <div className="menu-card fade-in" onClick={() => onOpen(item)}>
-      <div className="h-28 sm:h-32 bg-gradient-to-br from-forest-900 to-forest-800 flex items-center justify-center text-5xl relative">
-        {item.emoji}
-        {item.popular && <span className="absolute top-2 left-2 bg-amber-rms text-forest-950 text-xs font-black px-2 py-0.5 rounded-full flex items-center gap-1"><Star size={9} />Popular</span>}
-        {item.spicy && <span className="absolute top-2 right-2 text-sm">🌶️</span>}
-      </div>
-      <div className="p-3 sm:p-4">
-        <div className="flex items-start justify-between gap-1 mb-1">
-          <h3 className="font-bold text-forest-900 text-sm leading-tight line-clamp-2">{item.name}</h3>
-          <span className="text-forest-700 font-black text-sm whitespace-nowrap ml-1">${item.price.toFixed(2)}</span>
-        </div>
-        <div className="flex items-center gap-1 mb-3">
-          <Clock size={10} className="text-gray-400" />
-          <span className="text-xs text-gray-400">{item.time}</span>
-        </div>
-        {qty === 0 ? (
-          <button onClick={(e) => { e.stopPropagation(); onAdd(item); }}
-            className="w-full flex items-center justify-center gap-1.5 bg-forest-700 hover:bg-forest-600 active:scale-95 text-white font-semibold py-2 rounded-xl transition-all text-sm">
-            <Plus size={14} /> Add
-          </button>
-        ) : (
-          <div className="flex items-center justify-between bg-forest-50 rounded-xl p-1" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => onRemove(item.id)} className="w-8 h-8 rounded-lg bg-white border border-forest-200 text-forest-700 hover:bg-forest-100 flex items-center justify-center active:scale-90 transition-all"><Minus size={13} /></button>
-            <span className="font-black text-forest-900 text-base w-6 text-center">{qty}</span>
-            <button onClick={() => onAdd(item)} className="w-8 h-8 rounded-lg bg-forest-700 text-white hover:bg-forest-600 flex items-center justify-center active:scale-90 transition-all"><Plus size={13} /></button>
+    <article className="menu-card fade-in" onClick={() => onOpen(item)}>
+      <FoodVisual item={item} />
+      <div className="flex min-h-[178px] flex-col p-3.5">
+        <div className="mb-2 flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <h3 className="line-clamp-2 text-sm font-bold leading-snug text-forest-900">{item.name}</h3>
+            <KhmerText className="mt-0.5 line-clamp-1 text-xs font-semibold text-forest-700">{item.nameKh}</KhmerText>
           </div>
-        )}
+          <span className="shrink-0 text-sm font-black text-forest-700">${item.price.toFixed(2)}</span>
+        </div>
+        <p className="line-clamp-2 text-xs leading-relaxed text-gray-500">{item.description}</p>
+        <KhmerText className="mt-1 line-clamp-2 text-xs text-gray-500">{item.descriptionKh}</KhmerText>
+        <div className="mt-3">
+          <ItemTags item={item} />
+        </div>
+        <div className="mt-auto pt-3">
+          {qty === 0 ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onAdd(item);
+              }}
+              className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-forest-700 py-2.5 text-sm font-semibold text-white transition-all hover:bg-forest-600 active:scale-[0.98]"
+            >
+              <Plus size={14} />
+              Add
+            </button>
+          ) : (
+            <div className="flex items-center justify-between rounded-lg bg-cream-50 p-1" onClick={(e) => e.stopPropagation()}>
+              <button onClick={() => onRemove(item.id)} className="qty-btn bg-white text-forest-700 shadow-sm hover:bg-cream-100" aria-label="Decrease quantity">
+                <Minus size={13} />
+              </button>
+              <span className="w-7 text-center text-base font-black text-forest-900">{qty}</span>
+              <button onClick={() => onAdd(item)} className="qty-btn bg-forest-700 text-white hover:bg-forest-600" aria-label="Increase quantity">
+                <Plus size={13} />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </article>
   );
 }
 
+// function CustomerPagination({ total, page, limit, onPageChange, onLimitChange }) {
+//   const totalPages = Math.max(1, Math.ceil(total / limit));
+//   const start = total === 0 ? 0 : (page - 1) * limit + 1;
+//   const end = Math.min(page * limit, total);
+//
+//   const pages = () => {
+//     if (totalPages <= 5) return Array.from({ length: totalPages }, (_, index) => index + 1);
+//     if (page <= 3) return [1, 2, 3, 4, "...", totalPages];
+//     if (page >= totalPages - 2) return [1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+//     return [1, "...", page - 1, page, page + 1, "...", totalPages];
+//   };
+//
+//   if (total <= 0) return null;
+//
+//   return (
+//     <div className="mt-6 flex flex-col gap-3 rounded-xl border border-cream-200 bg-white px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
+//       <div className="flex items-center justify-between gap-3 sm:justify-start">
+//         <span className="text-xs text-gray-500">
+//           Showing {start}-{end} of {total}
+//         </span>
+//         <select
+//           value={limit}
+//           onChange={(event) => {
+//             onLimitChange(Number(event.target.value));
+//             onPageChange(1);
+//           }}
+//           className="rounded-lg border border-cream-200 bg-white px-2 py-1 text-xs outline-none focus:border-forest-400"
+//         >
+//           {[8, 12, 20, 50].map((value) => (
+//             <option key={value} value={value}>
+//               {value} / page
+//             </option>
+//           ))}
+//         </select>
+//       </div>
+//
+//       <div className="flex items-center justify-center gap-1">
+//         <button
+//           onClick={() => onPageChange(page - 1)}
+//           disabled={page === 1}
+//           className="flex h-8 w-8 items-center justify-center rounded-lg border border-cream-200 bg-white text-xs text-gray-600 hover:bg-cream-100 disabled:cursor-not-allowed disabled:opacity-40"
+//           aria-label="Previous page"
+//         >
+//           <ChevronLeft size={14} />
+//         </button>
+//         {pages().map((item, index) =>
+//           item === "..." ? (
+//             <span key={`ellipsis-${index}`} className="flex h-8 w-8 items-center justify-center text-xs text-gray-400">
+//               ...
+//             </span>
+//           ) : (
+//             <button
+//               key={item}
+//               onClick={() => onPageChange(item)}
+//               className={`flex h-8 w-8 items-center justify-center rounded-lg border text-xs font-medium transition-colors ${
+//                 page === item ? "border-forest-700 bg-forest-700 text-white" : "border-cream-200 bg-white text-gray-600 hover:bg-cream-100"
+//               }`}
+//             >
+//               {item}
+//             </button>
+//           ),
+//         )}
+//         <button
+//           onClick={() => onPageChange(page + 1)}
+//           disabled={page === totalPages}
+//           className="flex h-8 w-8 items-center justify-center rounded-lg border border-cream-200 bg-white text-xs text-gray-600 hover:bg-cream-100 disabled:cursor-not-allowed disabled:opacity-40"
+//           aria-label="Next page"
+//         >
+//           <ChevronLeft size={14} className="rotate-180" />
+//         </button>
+//       </div>
+//     </div>
+//   );
+// }
+
 export default function CustomerMenu() {
-  const [activeCategory, setActiveCategory] = useState("all");
+  const [activeCategory, setActiveCategory] = useState(null);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [modal, setModal] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [items, setItems] = useState([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(12);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [loadingItems, setLoadingItems] = useState(true);
+  const [error, setError] = useState("");
   const { cart, dispatch, count, total } = useCart();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const tableId = params.get("table") || cart.tableId;
   const catRef = useRef(null);
+  const searchTimer = useRef(null);
 
   const getQty = (id) => cart.items.find((i) => i.id === id)?.qty || 0;
   const handleAdd = (item) => dispatch({ type: "ADD", item });
   const handleRemove = (id) => dispatch({ type: "UPDATE_QTY", id, qty: getQty(id) - 1 });
 
-  const filtered = customerMenuItems.filter((item) => {
-    const matchCat = activeCategory === "all" || item.category === activeCategory;
-    const matchSearch = item.name.toLowerCase().includes(search.toLowerCase());
-    return matchCat && matchSearch;
-  });
+  useEffect(() => {
+    clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+      setPage(1);
+    }, DEBOUNCE_MS);
+
+    return () => clearTimeout(searchTimer.current);
+  }, [search]);
+
+  const loadCategories = useCallback(async () => {
+    try {
+      setLoadingCategories(true);
+      const res = await getCategories({
+        offset: 0,
+        max: 100,
+        sort: "name",
+        order: "asc",
+        status: "true",
+      });
+      setCategories((res?.data?.data || []).map(normalizeCategory));
+    } catch {
+      setError("Could not load menu categories.");
+    } finally {
+      setLoadingCategories(false);
+    }
+  }, []);
+
+  const loadItems = useCallback(async () => {
+    try {
+      setLoadingItems(true);
+      setError("");
+      const res = await getMenus({
+        offset: (page - 1) * limit,
+        max: limit,
+        sort: "name",
+        order: "asc",
+        keyword: debouncedSearch || undefined,
+        categoryId: activeCategory || undefined,
+        status: "true",
+      });
+      setItems((res?.data?.data || []).map(normalizeItem));
+      setTotalItems(res?.data?.total || 0);
+    } catch {
+      setError("Could not load menu items. Please ask staff for help.");
+      setItems([]);
+      setTotalItems(0);
+    } finally {
+      setLoadingItems(false);
+    }
+  }, [activeCategory, debouncedSearch, limit, page]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadCategories();
+  }, [loadCategories]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadItems();
+  }, [loadItems]);
+
+  const categoryTabs = [{ id: null, label: "All", icon: "Utensils" }, ...categories];
+  const activeLabel = categoryTabs.find((category) => category.id === activeCategory)?.label || "Menu";
+  const loading = loadingCategories || loadingItems;
+  const handleCategoryChange = (categoryId) => {
+    setActiveCategory(categoryId);
+    setPage(1);
+  };
 
   return (
-    <div className="min-h-screen bg-cream-50 flex flex-col">
-      {/* Sticky Header */}
-      <header className="sticky top-0 z-30 bg-white border-b border-cream-100 shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3">
+    <div className="min-h-screen bg-cream-50">
+      <header className="sticky top-0 z-30 border-b border-cream-200 bg-white/95 shadow-sm backdrop-blur">
+        <div className="mx-auto max-w-5xl px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate(-1)} className="text-gray-400 hover:text-forest-700 transition-colors shrink-0">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-cream-100 hover:text-forest-700"
+              aria-label="Go back"
+            >
               <ChevronLeft size={20} />
             </button>
             <div className="relative flex-1">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search dishes…"
-                className="w-full pl-9 pr-9 py-2.5 bg-cream-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-forest-300 border border-cream-200 transition-all" />
-              {search && <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"><X size={14} /></button>}
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search dishes"
+                className="input py-2.5 pl-9 pr-9"
+              />
+              {search && (
+                <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-forest-700" aria-label="Clear search">
+                  <X size={15} />
+                </button>
+              )}
             </div>
-            {tableId && <span className="text-xs bg-forest-100 text-forest-700 px-2.5 py-1.5 rounded-xl font-bold shrink-0">{tableId}</span>}
+            {tableId && <span className="shrink-0 rounded-lg bg-forest-100 px-2.5 py-2 text-xs font-bold text-forest-700">Table {tableId}</span>}
           </div>
         </div>
 
-        {/* Category tabs */}
-        <div ref={catRef} className="flex gap-2 overflow-x-auto px-4 sm:px-6 py-2 scrollbar-none max-w-4xl mx-auto">
-          {customerCategories.map((cat) => (
-            <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 transition-all active:scale-95 ${activeCategory === cat.id ? "bg-forest-700 text-white shadow-md shadow-forest-700/20" : "bg-cream-50 text-gray-600 border border-cream-200"}`}>
-              <span>{cat.emoji}</span> {cat.label}
-            </button>
-          ))}
+        <div ref={catRef} className="scrollbar-none mx-auto flex max-w-5xl gap-2 overflow-x-auto px-4 pb-3 sm:px-6">
+          {categoryTabs.map((cat) => {
+            const Icon = iconMap[cat.icon] || Utensils;
+            const active = activeCategory === cat.id;
+
+            return (
+              <button
+                key={cat.id ?? "__all"}
+                onClick={() => handleCategoryChange(cat.id)}
+                className={`flex shrink-0 items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold transition-all active:scale-[0.98] sm:text-sm ${
+                  active ? "bg-forest-700 text-white shadow-sm" : "border border-cream-200 bg-cream-50 text-gray-600 hover:border-forest-300 hover:text-forest-700"
+                }`}
+              >
+                <Icon size={14} />
+                <span>
+                  {cat.label}
+                  {cat.labelKh && <span className="ml-1 text-[11px] opacity-80">{cat.labelKh}</span>}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </header>
 
-      {/* Content */}
-      <main className="flex-1 pb-32">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
-          {/* Section title */}
-          {!search && (
-            <div className="mb-4">
-              <h2 className="font-black text-forest-900 text-lg">
-                {customerCategories.find(c => c.id === activeCategory)?.label}
-              </h2>
-              <p className="text-xs text-gray-400">{filtered.length} items available</p>
-            </div>
-          )}
-
-          {filtered.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-4xl mb-3">🔍</p>
-              <p className="font-semibold text-forest-900">No items found</p>
-              <p className="text-sm text-gray-400 mt-1">Try a different search or category</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-              {filtered.map((item) => (
-                <ItemCard key={item.id} item={item} qty={getQty(item.id)}
-                  onAdd={handleAdd} onRemove={handleRemove} onOpen={setModal} />
-              ))}
-            </div>
-          )}
+      <main className="mx-auto max-w-5xl px-4 pb-32 pt-5 sm:px-6">
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-forest-600">Digital menu</p>
+            <h1 className="mt-1 text-2xl font-black text-forest-900 sm:text-3xl">{search ? "Search results" : activeLabel}</h1>
+          </div>
+          <p className="text-sm text-gray-500">{loadingItems ? "Loading items..." : `${totalItems} items available`}</p>
         </div>
+
+        {error ? (
+          <div className="rounded-xl border border-red-100 bg-white px-6 py-10 text-center">
+            <Utensils size={34} className="mx-auto mb-3 text-red-300" />
+            <p className="font-semibold text-forest-900">Menu unavailable</p>
+            <p className="mt-1 text-sm text-gray-500">{error}</p>
+            <button onClick={loadItems} className="btn-secondary mt-5">
+              Try Again
+            </button>
+          </div>
+        ) : loading ? (
+          <div className="grid grid-cols-1 gap-4 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <div key={index} className="menu-card animate-pulse">
+                <div className="h-32 bg-cream-200" />
+                <div className="space-y-3 p-3.5">
+                  <div className="h-4 w-3/4 rounded bg-cream-200" />
+                  <div className="h-3 w-full rounded bg-cream-200" />
+                  <div className="h-3 w-2/3 rounded bg-cream-200" />
+                  <div className="h-9 rounded-lg bg-cream-200" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : items.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-cream-200 bg-white px-6 py-14 text-center">
+            <Search size={34} className="mx-auto mb-3 text-forest-300" />
+            <p className="font-semibold text-forest-900">No items found</p>
+            <p className="mt-1 text-sm text-gray-500">Try another search or category.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {items.map((item) => (
+              <ItemCard key={item.id} item={item} qty={getQty(item.id)} onAdd={handleAdd} onRemove={handleRemove} onOpen={setModal} />
+            ))}
+          </div>
+        )}
+
+        {/*{!error && !loading && items.length > 0 && (*/}
+        {/*  <CustomerPagination total={totalItems} page={page} limit={limit} onPageChange={setPage} onLimitChange={setLimit} />*/}
+        {/*)}*/}
       </main>
 
-      {/* Floating Cart Bar */}
       {count > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 p-4 bg-gradient-to-t from-cream-50 via-cream-50/95 to-transparent pt-8">
-          <div className="max-w-4xl mx-auto">
-            <button onClick={() => navigate(`/cart${tableId ? `?table=${tableId}` : ""}`)}
-              className="w-full flex items-center justify-between bg-forest-900 hover:bg-forest-800 active:scale-95 text-white px-5 py-4 rounded-2xl transition-all shadow-2xl shadow-forest-900/40">
-              <div className="flex items-center gap-3">
-                <div className="relative">
+        <div className="fixed inset-x-0 bottom-0 z-40 bg-gradient-to-t from-cream-50 via-cream-50/95 to-transparent p-4 pt-8">
+          <div className="mx-auto max-w-5xl">
+            <button
+              onClick={() => navigate(`/cart${tableId ? `?table=${tableId}` : ""}`)}
+              className="flex w-full items-center justify-between rounded-xl bg-forest-900 px-5 py-4 text-white shadow-2xl shadow-forest-900/25 transition-all hover:bg-forest-800 active:scale-[0.99]"
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="relative shrink-0">
                   <ShoppingCart size={20} />
-                  <span className="absolute -top-2 -right-2 w-5 h-5 bg-amber-rms text-forest-950 text-xs font-black rounded-full flex items-center justify-center">{count}</span>
+                  <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-rms px-1 text-xs font-black text-forest-950">{count}</span>
                 </div>
-                <span className="font-bold text-sm sm:text-base">View Order · {count} item{count > 1 ? "s" : ""}</span>
+                <span className="truncate text-sm font-bold sm:text-base">View Order</span>
               </div>
-              <span className="font-black text-amber-rms text-base">${total.toFixed(2)}</span>
+              <span className="shrink-0 text-base font-black text-amber-rms">${total.toFixed(2)}</span>
             </button>
           </div>
         </div>
       )}
 
-      {/* Item Detail Modal */}
-      {modal && (
-        <ItemModal item={modal} qty={getQty(modal.id)}
-          onAdd={handleAdd} onRemove={handleRemove} onClose={() => setModal(null)} />
-      )}
+      {modal && <ItemModal item={modal} qty={getQty(modal.id)} onAdd={handleAdd} onRemove={handleRemove} onClose={() => setModal(null)} />}
     </div>
   );
 }
