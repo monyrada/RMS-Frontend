@@ -8,6 +8,7 @@ import {
   Fish,
   GlassWater,
   Leaf,
+  Loader2,
   MessageSquare,
   Minus,
   Plus,
@@ -21,6 +22,8 @@ import {
   Wheat,
 } from "lucide-react";
 import { useCart } from "../../context/CartContext";
+import { useToast } from "../../components/ui/Toast";
+import { createOrder } from "../../api/order/order.api";
 
 const iconMap = {
   Beef,
@@ -57,9 +60,11 @@ function KhmerText({ children, className = "" }) {
 export default function CustomerCart() {
   const { cart, dispatch, total, count } = useCart();
   const navigate = useNavigate();
+  const toast = useToast();
   const [params] = useSearchParams();
   const tableId = params.get("table") || cart.tableId;
   const [note, setNote] = useState(cart.note || "");
+  const [submitting, setSubmitting] = useState(false);
 
   const handleQty = (id, qty) => dispatch({ type: "UPDATE_QTY", id, qty });
   const handleRemove = (id) => dispatch({ type: "REMOVE", id });
@@ -67,9 +72,42 @@ export default function CustomerCart() {
   const tax = total * 0.1;
   const grandTotal = total + tax;
 
-  const handlePlaceOrder = () => {
-    dispatch({ type: "SET_NOTE", note });
-    navigate(`/order-confirm${tableId ? `?table=${tableId}` : ""}`);
+  const handlePlaceOrder = async () => {
+    if (submitting) return;
+
+    if (!tableId) {
+      toast.error("No table selected", "Please scan the QR code on your table again.");
+      return;
+    }
+
+    const cartSnapshot = cart.items;
+
+    try {
+      setSubmitting(true);
+      dispatch({ type: "SET_NOTE", note });
+
+      const res = await createOrder({
+        tableId,
+        orderType: "DINE_IN",
+        source: "CUSTOMER_QR",
+        note,
+        tax: Number(tax.toFixed(2)),
+        items: cartSnapshot.map((item) => ({ menuId: item.id, quantity: item.qty })),
+      });
+
+      const order = res?.data?.data;
+      dispatch({ type: "CLEAR" });
+      navigate(`/order-confirm${tableId ? `?table=${tableId}` : ""}`, {
+        state: { order, cartSnapshot },
+      });
+    } catch (err) {
+      toast.error(
+        "Could not place order",
+        err?.response?.data?.message || "Please try again in a moment."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (count === 0) {
@@ -172,11 +210,12 @@ export default function CustomerCart() {
         <div className="mx-auto max-w-lg">
           <button
             onClick={handlePlaceOrder}
-            className="flex w-full items-center justify-between rounded-xl bg-forest-900 px-6 py-4 font-semibold text-white transition-all hover:bg-forest-800 active:scale-[0.99]"
+            disabled={submitting}
+            className="flex w-full items-center justify-between rounded-xl bg-forest-900 px-6 py-4 font-semibold text-white transition-all hover:bg-forest-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70"
           >
             <div className="flex items-center gap-2">
-              <ShoppingBag size={18} />
-              <span>Place Order</span>
+              {submitting ? <Loader2 size={18} className="animate-spin" /> : <ShoppingBag size={18} />}
+              <span>{submitting ? "Placing order..." : "Place Order"}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="font-black text-amber-rms">${grandTotal.toFixed(2)}</span>
