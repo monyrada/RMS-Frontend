@@ -96,6 +96,7 @@ export default function OrderConfirm() {
   const location = useLocation();
   const [params] = useSearchParams();
   const tableId = params.get("table") || cart.tableId;
+  const tableLabel = cart.tableNumber || tableId;
 
   const [order, setOrder] = useState(location.state?.order || null);
   const [cartSnapshot] = useState(location.state?.cartSnapshot || cart.items);
@@ -188,7 +189,7 @@ export default function OrderConfirm() {
         </div>
         <h1 className="mb-1 text-2xl font-black">{isCancelled ? "Order Cancelled" : "Order Placed"}</h1>
         <p className={`mb-4 text-sm ${isCancelled ? "text-red-300" : "text-forest-400"}`}>
-          {tableId ? `Table ${tableId} | ` : ""}
+          {tableId ? `Table ${tableLabel} | ` : ""}
           {order.orderNumber}
         </p>
         {!isCancelled && (

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
+  AlertTriangle,
   Beef,
   CakeSlice,
   ChevronLeft,
@@ -26,6 +27,7 @@ import {
 import { useCart } from "../../context/CartContext";
 import { getCategories } from "../../api/menu/category.api";
 import { getMenus } from "../../api/menu/item.api";
+import { useTableScan } from "../../hooks/useTableScan";
 
 const DEBOUNCE_MS = 300;
 
@@ -354,6 +356,8 @@ export default function CustomerMenu() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const tableId = params.get("table") || cart.tableId;
+  const { status: scanStatus, result: scanResult } = useTableScan(tableId);
+  const tableLabel = scanResult?.tableNumber || cart.tableNumber || tableId;
   const catRef = useRef(null);
   const searchTimer = useRef(null);
 
@@ -457,7 +461,7 @@ export default function CustomerMenu() {
                 </button>
               )}
             </div>
-            {tableId && <span className="shrink-0 rounded-lg bg-forest-100 px-2.5 py-2 text-xs font-bold text-forest-700">Table {tableId}</span>}
+            {tableId && <span className="shrink-0 rounded-lg bg-forest-100 px-2.5 py-2 text-xs font-bold text-forest-700">Table {tableLabel}</span>}
           </div>
         </div>
 
@@ -486,6 +490,22 @@ export default function CustomerMenu() {
       </header>
 
       <main className="mx-auto max-w-5xl px-4 pb-32 pt-5 sm:px-6">
+        {scanStatus === "blocked" && (
+          <div className="mb-5 flex items-center gap-3 rounded-xl border border-amber-rms/30 bg-amber-rms/10 px-4 py-3">
+            <AlertTriangle size={17} className="shrink-0 text-amber-700" />
+            <span className="text-sm text-amber-800">
+              {scanResult?.message || "This table isn't available for ordering right now."}
+            </span>
+          </div>
+        )}
+
+        {scanStatus === "invalid" && (
+          <div className="mb-5 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+            <AlertTriangle size={17} className="shrink-0 text-red-500" />
+            <span className="text-sm text-red-700">This QR code isn't valid. Please ask staff for help.</span>
+          </div>
+        )}
+
         <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-forest-600">Digital menu</p>

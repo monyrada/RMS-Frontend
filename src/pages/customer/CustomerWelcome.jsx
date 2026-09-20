@@ -1,17 +1,19 @@
-import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowRight, ChefHat, Clock, Leaf, QrCode, Star, Utensils, Wifi } from "lucide-react";
-import { useCart } from "../../context/CartContext";
+import { AlertTriangle, ArrowRight, ChefHat, Clock, Leaf, QrCode, Star, Utensils, Wifi } from "lucide-react";
+import { useTableScan } from "../../hooks/useTableScan";
 
 export default function CustomerWelcome() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const { dispatch } = useCart();
   const tableId = params.get("table");
 
-  useEffect(() => {
-    if (tableId) dispatch({ type: "SET_TABLE", tableId });
-  }, [dispatch, tableId]);
+  // Real QR codes land on /menu directly (see useTableScan's docblock), so this
+  // only fires if someone links to "/" with a table param by hand — kept as a
+  // defensive fallback rather than the primary validation point.
+  const { status: scanStatus, result: scanResult } = useTableScan(tableId);
+
+  // Only carry the table through to the menu once it's been validated as orderable.
+  const linkTableId = scanStatus === "ready" ? tableId : null;
 
   return (
     <div className="min-h-screen bg-forest-950 text-white">
@@ -54,22 +56,47 @@ export default function CustomerWelcome() {
             Choose from the full menu, add notes for the kitchen, and keep your order connected to the right table.
           </p>
 
-          {tableId ? (
-            <div className="mt-6 flex items-center gap-2 rounded-xl border border-forest-700 bg-forest-900 px-4 py-3">
-              <div className="h-2 w-2 rounded-full bg-forest-300" />
-              <span className="text-sm text-forest-300">
-                Table <strong className="text-white">{tableId}</strong> is ready.
-              </span>
-            </div>
-          ) : (
-            <div className="mt-6 flex items-center gap-3 rounded-xl border border-amber-rms/30 bg-amber-rms/10 px-4 py-3">
-              <QrCode size={17} className="shrink-0 text-amber-rms" />
-              <span className="text-sm text-amber-100">Scan the QR code on your table to link an order.</span>
-            </div>
+          {scanStatus === "ready" && (
+              <div className="mt-6 flex items-center gap-2 rounded-xl border border-forest-700 bg-forest-900 px-4 py-3">
+                <div className="h-2 w-2 rounded-full bg-forest-300" />
+                <span className="text-sm text-forest-300">
+                  Table <strong className="text-white">{scanResult?.tableNumber}</strong> is ready.
+                </span>
+              </div>
+          )}
+
+          {scanStatus === "loading" && (
+              <div className="mt-6 flex items-center gap-3 rounded-xl border border-forest-700 bg-forest-900 px-4 py-3">
+                <div className="h-2 w-2 rounded-full bg-forest-300 animate-pulse" />
+                <span className="text-sm text-forest-300">Checking your table…</span>
+              </div>
+          )}
+
+          {scanStatus === "blocked" && (
+              <div className="mt-6 flex items-center gap-3 rounded-xl border border-amber-rms/30 bg-amber-rms/10 px-4 py-3">
+                <AlertTriangle size={17} className="shrink-0 text-amber-rms" />
+                <span className="text-sm text-amber-100">
+                  {scanResult?.message || "This table isn't available for ordering right now."}
+                </span>
+              </div>
+          )}
+
+          {scanStatus === "invalid" && (
+              <div className="mt-6 flex items-center gap-3 rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3">
+                <AlertTriangle size={17} className="shrink-0 text-red-300" />
+                <span className="text-sm text-red-100">This QR code isn't valid. Please ask staff for help.</span>
+              </div>
+          )}
+
+          {scanStatus === "idle" && (
+              <div className="mt-6 flex items-center gap-3 rounded-xl border border-amber-rms/30 bg-amber-rms/10 px-4 py-3">
+                <QrCode size={17} className="shrink-0 text-amber-rms" />
+                <span className="text-sm text-amber-100">Scan the QR code on your table to link an order.</span>
+              </div>
           )}
 
           <button
-            onClick={() => navigate(`/menu${tableId ? `?table=${tableId}` : ""}`)}
+            onClick={() => navigate(`/menu${linkTableId ? `?table=${linkTableId}` : ""}`)}
             className="mt-6 flex w-full items-center justify-center gap-3 rounded-xl bg-amber-rms px-8 py-4 text-base font-black text-forest-950 shadow-xl shadow-amber-rms/20 transition-all hover:bg-amber-light active:scale-[0.99]"
           >
             Browse Menu

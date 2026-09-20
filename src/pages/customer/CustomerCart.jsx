@@ -63,6 +63,7 @@ export default function CustomerCart() {
   const toast = useToast();
   const [params] = useSearchParams();
   const tableId = params.get("table") || cart.tableId;
+  const tableLabel = cart.tableNumber || tableId;
   const [note, setNote] = useState(cart.note || "");
   const [submitting, setSubmitting] = useState(false);
 
@@ -140,7 +141,7 @@ export default function CustomerCart() {
             <h1 className="text-lg font-black text-forest-900">Your Order</h1>
             <p className="text-xs text-gray-500">{count} item{count > 1 ? "s" : ""} selected</p>
           </div>
-          {tableId && <span className="rounded-lg bg-forest-100 px-2.5 py-2 text-xs font-bold text-forest-700">Table {tableId}</span>}
+          {tableId && <span className="rounded-lg bg-forest-100 px-2.5 py-2 text-xs font-bold text-forest-700">Table {tableLabel}</span>}
         </div>
       </header>
 

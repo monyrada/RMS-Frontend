@@ -28,7 +28,7 @@ function cartReducer(state, action) {
     case "CLEAR":
       return { ...state, items: [] };
     case "SET_TABLE":
-      return { ...state, tableId: action.tableId };
+      return { ...state, tableId: action.tableId, tableNumber: action.tableNumber ?? state.tableNumber };
     case "SET_NOTE":
       return { ...state, note: action.note };
     default:
@@ -40,6 +40,7 @@ export function CartProvider({ children }) {
   const [cart, dispatch] = useReducer(cartReducer, {
     items: [],
     tableId: null,
+    tableNumber: null,
     note: "",
   });
 
