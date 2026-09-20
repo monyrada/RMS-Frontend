@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MapPin, Users, QrCode, Download, Loader2 } from "lucide-react";
+import { MapPin, Users, QrCode, Download, Loader2, Copy, Check } from "lucide-react";
 import Modal from "../../../../modal/Modal.jsx";
 import { getTableQrCode } from "../../../../api/table/table.api";
 import { tableStatusConfig } from "../tableStatus.js";
@@ -12,6 +12,7 @@ export default function TableDetailModal({
 }) {
     const [qrUrl, setQrUrl] = useState(null);
     const [qrLoading, setQrLoading] = useState(false);
+    const [copied, setCopied] = useState(false);
 
     useEffect(() => {
         if (!open || !table?.id) return;
@@ -42,6 +43,17 @@ export default function TableDetailModal({
         document.body.appendChild(a);
         a.click();
         a.remove();
+    };
+
+    const handleCopyLink = async () => {
+        if (!table.qrCodeUrl) return;
+        try {
+            await navigator.clipboard.writeText(table.qrCodeUrl);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+        } catch {
+            // Clipboard API unavailable (e.g. insecure context) — the link is still visible to copy manually.
+        }
     };
 
     return (
@@ -105,6 +117,24 @@ export default function TableDetailModal({
                             <Download size={13} /> Download
                         </button>
                     </div>
+
+                    {table.qrCodeUrl && (
+                        <div className="mt-3 flex items-center gap-2">
+                            <input
+                                readOnly
+                                value={table.qrCodeUrl}
+                                onFocus={(e) => e.target.select()}
+                                className="flex-1 min-w-0 px-2.5 py-1.5 text-xs font-mono text-gray-500 bg-gray-50 rounded-lg border border-gray-100 outline-none"
+                            />
+                            <button
+                                onClick={handleCopyLink}
+                                className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
+                            >
+                                {copied ? <Check size={12} className="text-forest-600" /> : <Copy size={12} />}
+                                {copied ? "Copied" : "Copy link"}
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 
