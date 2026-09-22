@@ -45,8 +45,9 @@ function CartItemIcon({ item }) {
   const Icon = iconMap[item.icon] || Utensils;
 
   return (
-    <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${item.accent || "from-cream-100 to-forest-300/30"}`}>
-      <Icon size={22} className="text-forest-800" strokeWidth={1.8} />
+    <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br sm:h-12 sm:w-12 ${item.accent || "from-cream-100 to-forest-300/30"}`}>
+      <Icon size={20} className="text-forest-800 sm:hidden" strokeWidth={1.8} />
+      <Icon size={22} className="hidden text-forest-800 sm:block" strokeWidth={1.8} />
     </div>
   );
 }
@@ -148,27 +149,31 @@ export default function CustomerCart() {
       <main className="mx-auto w-full max-w-lg px-4 py-4 pb-28 sm:px-6">
         <section className="card mb-4 p-4">
           {cart.items.map((item) => (
-            <div key={item.id} className="cart-item">
+            <div key={item.id} className="cart-item items-start gap-3">
               <CartItemIcon item={item} />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-forest-900">{item.name}</p>
-                <KhmerText className="truncate text-xs font-semibold text-forest-700">{item.nameKh}</KhmerText>
-                <p className="text-xs text-gray-500">${item.price.toFixed(2)} each</p>
-              </div>
-              <div className="flex shrink-0 items-center gap-1.5">
-                <button onClick={() => handleQty(item.id, item.qty - 1)} className="qty-btn bg-cream-100 text-forest-700 hover:bg-cream-200" aria-label="Decrease quantity">
-                  <Minus size={12} />
-                </button>
-                <span className="w-6 text-center text-sm font-black">{item.qty}</span>
-                <button onClick={() => handleQty(item.id, item.qty + 1)} className="qty-btn bg-forest-700 text-white hover:bg-forest-600" aria-label="Increase quantity">
-                  <Plus size={12} />
-                </button>
-                <button onClick={() => handleRemove(item.id)} className="ml-1 rounded-lg p-2 text-gray-300 transition-colors hover:bg-red-50 hover:text-red-500" aria-label="Remove item">
-                  <Trash2 size={15} />
-                </button>
-              </div>
-              <div className="w-16 shrink-0 text-right">
-                <p className="text-sm font-bold text-forest-900">${(item.price * item.qty).toFixed(2)}</p>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-forest-900">{item.name}</p>
+                    <KhmerText className="truncate text-sm font-semibold text-forest-700">{item.nameKh}</KhmerText>
+                    <p className="text-xs text-gray-500">${item.price.toFixed(2)} each</p>
+                  </div>
+                  <button onClick={() => handleRemove(item.id)} className="shrink-0 rounded-lg p-1.5 text-gray-300 transition-colors hover:bg-red-50 hover:text-red-500" aria-label="Remove item">
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+                <div className="mt-2 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <button onClick={() => handleQty(item.id, item.qty - 1)} className="qty-btn bg-cream-100 text-forest-700 hover:bg-cream-200" aria-label="Decrease quantity">
+                      <Minus size={12} />
+                    </button>
+                    <span className="w-6 text-center text-sm font-black">{item.qty}</span>
+                    <button onClick={() => handleQty(item.id, item.qty + 1)} className="qty-btn bg-forest-700 text-white hover:bg-forest-600" aria-label="Increase quantity">
+                      <Plus size={12} />
+                    </button>
+                  </div>
+                  <p className="text-sm font-bold text-forest-900">${(item.price * item.qty).toFixed(2)}</p>
+                </div>
               </div>
             </div>
           ))}

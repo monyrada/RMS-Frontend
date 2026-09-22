@@ -112,8 +112,8 @@ function normalizeCategory(category) {
 
 function FoodVisual({ item, size = "md" }) {
   const Icon = iconMap[item.icon] || Utensils;
-  const visualSize = size === "lg" ? "h-28" : "h-32";
-  const iconSize = size === "lg" ? 42 : 34;
+  const visualSize = size === "lg" ? "aspect-[16/10]" : "aspect-[2/1]";
+  const iconSize = size === "lg" ? 42 : 28;
 
   if (item.imageUrl) {
     return (
@@ -182,9 +182,9 @@ function ItemModal({ item, qty, onAdd, onRemove, onClose }) {
           <div className="mb-3 flex items-start justify-between gap-4">
             <div>
               <h2 className="text-xl font-black leading-tight text-forest-900">{item.name}</h2>
-              <KhmerText className="mt-1 text-sm font-semibold text-forest-700">{item.nameKh}</KhmerText>
+              <KhmerText className="mt-1 text-base font-semibold text-forest-700">{item.nameKh}</KhmerText>
               <p className="mt-1 text-sm leading-relaxed text-gray-500">{item.description}</p>
-              <KhmerText className="mt-1 text-sm text-gray-500">{item.descriptionKh}</KhmerText>
+              <KhmerText className="mt-1 text-base text-gray-500">{item.descriptionKh}</KhmerText>
             </div>
             <span className="shrink-0 text-xl font-black text-forest-700">${item.price.toFixed(2)}</span>
           </div>
@@ -220,18 +220,18 @@ function ItemModal({ item, qty, onAdd, onRemove, onClose }) {
 
 function ItemCard({ item, qty, onAdd, onRemove, onOpen }) {
   return (
-    <article className="menu-card fade-in" onClick={() => onOpen(item)}>
+    <article className="menu-card fade-in flex h-full flex-col" onClick={() => onOpen(item)}>
       <FoodVisual item={item} />
-      <div className="flex min-h-[178px] flex-col p-3.5">
-        <div className="mb-2 flex items-start justify-between gap-2">
+      <div className="flex flex-1 flex-col p-3">
+        <div className="mb-1.5 flex items-start justify-between gap-2">
           <div className="min-w-0">
             <h3 className="line-clamp-2 text-sm font-bold leading-snug text-forest-900">{item.name}</h3>
-            <KhmerText className="mt-0.5 line-clamp-1 text-xs font-semibold text-forest-700">{item.nameKh}</KhmerText>
+            <KhmerText className="mt-0.5 line-clamp-1 text-sm font-semibold text-forest-700">{item.nameKh}</KhmerText>
           </div>
           <span className="shrink-0 text-sm font-black text-forest-700">${item.price.toFixed(2)}</span>
         </div>
-        <p className="line-clamp-2 text-xs leading-relaxed text-gray-500">{item.description}</p>
-        <KhmerText className="mt-1 line-clamp-2 text-xs text-gray-500">{item.descriptionKh}</KhmerText>
+        <p className="line-clamp-2 text-sm leading-relaxed text-gray-500">{item.description}</p>
+        <KhmerText className="mt-1 line-clamp-2 text-sm text-gray-500">{item.descriptionKh}</KhmerText>
         <div className="mt-3">
           <ItemTags item={item} />
         </div>
@@ -360,6 +360,16 @@ export default function CustomerMenu() {
   const tableLabel = scanResult?.tableNumber || cart.tableNumber || tableId;
   const catRef = useRef(null);
   const searchTimer = useRef(null);
+  const [tabEdges, setTabEdges] = useState({ left: false, right: false });
+
+  const checkTabEdges = useCallback(() => {
+    const el = catRef.current;
+    if (!el) return;
+    setTabEdges({
+      left: el.scrollLeft > 4,
+      right: el.scrollLeft + el.clientWidth < el.scrollWidth - 4,
+    });
+  }, []);
 
   const getQty = (id) => cart.items.find((i) => i.id === id)?.qty || 0;
   const handleAdd = (item) => dispatch({ type: "ADD", item });
@@ -427,6 +437,12 @@ export default function CustomerMenu() {
     loadItems();
   }, [loadItems]);
 
+  useEffect(() => {
+    checkTabEdges();
+    window.addEventListener("resize", checkTabEdges);
+    return () => window.removeEventListener("resize", checkTabEdges);
+  }, [checkTabEdges, categories]);
+
   const categoryTabs = [{ id: null, label: "All", icon: "Utensils" }, ...categories];
   const activeLabel = categoryTabs.find((category) => category.id === activeCategory)?.label || "Menu";
   const loading = loadingCategories || loadingItems;
@@ -465,27 +481,39 @@ export default function CustomerMenu() {
           </div>
         </div>
 
-        <div ref={catRef} className="scrollbar-none mx-auto flex max-w-5xl gap-2 overflow-x-auto px-4 pb-3 sm:px-6">
-          {categoryTabs.map((cat) => {
-            const Icon = iconMap[cat.icon] || Utensils;
-            const active = activeCategory === cat.id;
+        <div className="relative mx-auto max-w-5xl">
+          <div
+            ref={catRef}
+            onScroll={checkTabEdges}
+            className="scrollbar-none flex gap-2 overflow-x-auto px-4 pb-3 sm:px-6"
+          >
+            {categoryTabs.map((cat) => {
+              const Icon = iconMap[cat.icon] || Utensils;
+              const active = activeCategory === cat.id;
 
-            return (
-              <button
-                key={cat.id ?? "__all"}
-                onClick={() => handleCategoryChange(cat.id)}
-                className={`flex shrink-0 items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold transition-all active:scale-[0.98] sm:text-sm ${
-                  active ? "bg-forest-700 text-white shadow-sm" : "border border-cream-200 bg-cream-50 text-gray-600 hover:border-forest-300 hover:text-forest-700"
-                }`}
-              >
-                <Icon size={14} />
-                <span>
-                  {cat.label}
-                  {cat.labelKh && <span className="ml-1 text-[11px] opacity-80">{cat.labelKh}</span>}
-                </span>
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={cat.id ?? "__all"}
+                  onClick={() => handleCategoryChange(cat.id)}
+                  className={`flex shrink-0 items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold transition-all active:scale-[0.98] sm:text-sm ${
+                    active ? "bg-forest-700 text-white shadow-sm" : "border border-cream-200 bg-cream-50 text-gray-600 hover:border-forest-300 hover:text-forest-700"
+                  }`}
+                >
+                  <Icon size={14} />
+                  <span>
+                    {cat.label}
+                    {cat.labelKh && <span className="ml-1 text-xs opacity-80">{cat.labelKh}</span>}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          {tabEdges.left && (
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-white to-transparent sm:left-6" />
+          )}
+          {tabEdges.right && (
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent sm:right-6" />
+          )}
         </div>
       </header>
 
@@ -524,10 +552,10 @@ export default function CustomerMenu() {
             </button>
           </div>
         ) : loading ? (
-          <div className="grid grid-cols-1 gap-4 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, index) => (
               <div key={index} className="menu-card animate-pulse">
-                <div className="h-32 bg-cream-200" />
+                <div className="aspect-[4/3] bg-cream-200" />
                 <div className="space-y-3 p-3.5">
                   <div className="h-4 w-3/4 rounded bg-cream-200" />
                   <div className="h-3 w-full rounded bg-cream-200" />
@@ -544,7 +572,7 @@ export default function CustomerMenu() {
             <p className="mt-1 text-sm text-gray-500">Try another search or category.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
             {items.map((item) => (
               <ItemCard key={item.id} item={item} qty={getQty(item.id)} onAdd={handleAdd} onRemove={handleRemove} onOpen={setModal} />
             ))}

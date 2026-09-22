@@ -235,7 +235,7 @@ export default function OrderConfirm() {
                   <SummaryIcon item={item} />
                   <div className="min-w-0">
                     <p className="truncate text-gray-700">{item.name}</p>
-                    <KhmerText className="truncate text-xs font-semibold text-forest-700">{item.nameKh}</KhmerText>
+                    <KhmerText className="truncate text-sm font-semibold text-forest-700">{item.nameKh}</KhmerText>
                     <p className="text-xs text-gray-400">Qty {item.qty}</p>
                   </div>
                 </div>

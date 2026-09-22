@@ -16,7 +16,7 @@ export default function CustomerWelcome() {
   const linkTableId = scanStatus === "ready" ? tableId : null;
 
   return (
-    <div className="min-h-screen bg-forest-950 text-white">
+    <div className="flex min-h-screen flex-col bg-forest-950 text-white">
       <header className="mx-auto w-full max-w-lg px-6 pb-4 pt-8">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -34,18 +34,20 @@ export default function CustomerWelcome() {
         </div>
       </header>
 
-      <main className="mx-auto flex min-h-[calc(100vh-88px)] w-full max-w-lg flex-col px-6 pb-8">
+      <main className="mx-auto flex w-full max-w-lg flex-1 flex-col px-6 pb-8">
         <section className="flex flex-1 flex-col justify-center py-8">
-          <div className="relative mb-7 h-40 overflow-hidden rounded-2xl border border-forest-800 bg-forest-900 shadow-2xl shadow-black/20">
-            <div className="absolute left-5 top-5 flex h-14 w-14 items-center justify-center rounded-xl bg-forest-800">
-              <ChefHat size={26} className="text-forest-300" />
+          <div className="relative mb-7 h-40 overflow-hidden rounded-2xl border border-forest-800 bg-forest-900 shadow-2xl shadow-black/20 xs:h-44">
+            <div className="absolute left-5 top-5 flex h-12 w-12 items-center justify-center rounded-xl bg-forest-800 xs:h-14 xs:w-14">
+              <ChefHat size={22} className="text-forest-300 xs:hidden" />
+              <ChefHat size={26} className="hidden text-forest-300 xs:block" />
             </div>
-            <div className="absolute bottom-5 right-5 flex h-24 w-24 items-center justify-center rounded-full bg-cream-50 shadow-xl">
-              <Utensils size={42} className="text-forest-800" strokeWidth={1.6} />
+            <div className="absolute bottom-5 right-5 flex h-16 w-16 items-center justify-center rounded-full bg-cream-50 shadow-xl xs:h-24 xs:w-24">
+              <Utensils size={30} className="text-forest-800 xs:hidden" strokeWidth={1.6} />
+              <Utensils size={42} className="hidden text-forest-800 xs:block" strokeWidth={1.6} />
             </div>
-            <div className="absolute bottom-5 left-5">
+            <div className="absolute bottom-5 left-5 max-w-[55%]">
               <p className="text-xs font-semibold uppercase tracking-wider text-amber-rms">Table ordering</p>
-              <p className="mt-1 max-w-[190px] text-sm leading-relaxed text-forest-300">Fresh dishes sent directly to the kitchen.</p>
+              <p className="mt-1 text-sm leading-relaxed text-forest-300">Fresh dishes sent directly to the kitchen.</p>
             </div>
           </div>
 
@@ -105,13 +107,13 @@ export default function CustomerWelcome() {
           <p className="mt-3 text-center text-xs text-forest-500">No account needed. Order in seconds.</p>
         </section>
 
-        <section className="grid grid-cols-3 gap-3">
+        <section className="grid grid-cols-3 gap-2 xs:gap-3">
           {[
             { icon: Clock, label: "Fast", sub: "~15 min" },
             { icon: Star, label: "Rated", sub: "4.8 / 5" },
             { icon: Wifi, label: "Wi-Fi", sub: "Free" },
           ].map(({ icon: Icon, label, sub }) => (
-            <div key={label} className="rounded-xl border border-forest-800 bg-forest-900 p-3 text-center">
+            <div key={label} className="rounded-xl border border-forest-800 bg-forest-900 p-2.5 text-center xs:p-3">
               <div className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-forest-800">
                 <Icon size={14} className="text-forest-300" />
               </div>
