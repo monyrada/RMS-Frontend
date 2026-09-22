@@ -95,7 +95,7 @@ export default function OrderConfirm() {
   const navigate = useNavigate();
   const location = useLocation();
   const [params] = useSearchParams();
-  const tableId = params.get("table") || cart.tableId;
+  const tableId = params.get("tableId") || cart.tableId;
   const tableLabel = cart.tableNumber || tableId;
 
   const [order, setOrder] = useState(location.state?.order || null);
@@ -140,7 +140,7 @@ export default function OrderConfirm() {
   const handleNewOrder = () => {
     dispatch({ type: "CLEAR" });
     sessionStorage.removeItem(LAST_ORDER_KEY);
-    navigate(`/menu${tableId ? `?table=${tableId}` : ""}`);
+    navigate(`/menu${tableId ? `?tableId=${tableId}` : ""}`);
   };
 
   if (loading) {
@@ -162,7 +162,7 @@ export default function OrderConfirm() {
           <h2 className="mb-1 text-xl font-bold text-forest-900">Order not found</h2>
           <p className="max-w-xs text-sm text-gray-500">We couldn't find that order. Try browsing the menu again.</p>
         </div>
-        <button onClick={() => navigate(`/menu${tableId ? `?table=${tableId}` : ""}`)} className="btn-secondary">
+        <button onClick={() => navigate(`/menu${tableId ? `?tableId=${tableId}` : ""}`)} className="btn-secondary">
           Browse Menu
         </button>
       </div>

@@ -62,7 +62,7 @@ export default function CustomerCart() {
   const navigate = useNavigate();
   const toast = useToast();
   const [params] = useSearchParams();
-  const tableId = params.get("table") || cart.tableId;
+  const tableId = params.get("tableId") || cart.tableId;
   const tableLabel = cart.tableNumber || tableId;
   const [note, setNote] = useState(cart.note || "");
   const [submitting, setSubmitting] = useState(false);
@@ -98,7 +98,7 @@ export default function CustomerCart() {
 
       const order = res?.data?.data;
       dispatch({ type: "CLEAR" });
-      navigate(`/order-confirm${tableId ? `?table=${tableId}` : ""}`, {
+      navigate(`/order-confirm${tableId ? `?tableId=${tableId}` : ""}`, {
         state: { order, cartSnapshot },
       });
     } catch (err) {

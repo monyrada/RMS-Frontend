@@ -5,7 +5,7 @@ import { useTableScan } from "../../hooks/useTableScan";
 export default function CustomerWelcome() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const tableId = params.get("table");
+  const tableId = params.get("tableId");
 
   // Real QR codes land on /menu directly (see useTableScan's docblock), so this
   // only fires if someone links to "/" with a table param by hand — kept as a
@@ -96,7 +96,7 @@ export default function CustomerWelcome() {
           )}
 
           <button
-            onClick={() => navigate(`/menu${linkTableId ? `?table=${linkTableId}` : ""}`)}
+            onClick={() => navigate(`/menu${linkTableId ? `?tableId=${linkTableId}` : ""}`)}
             className="mt-6 flex w-full items-center justify-center gap-3 rounded-xl bg-amber-rms px-8 py-4 text-base font-black text-forest-950 shadow-xl shadow-amber-rms/20 transition-all hover:bg-amber-light active:scale-[0.99]"
           >
             Browse Menu

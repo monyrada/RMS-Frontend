@@ -355,7 +355,7 @@ export default function CustomerMenu() {
   const { cart, dispatch, count, total } = useCart();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const tableId = params.get("table") || cart.tableId;
+  const tableId = params.get("tableId") || cart.tableId;
   const { status: scanStatus, result: scanResult } = useTableScan(tableId);
   const tableLabel = scanResult?.tableNumber || cart.tableNumber || tableId;
   const catRef = useRef(null);
@@ -560,7 +560,7 @@ export default function CustomerMenu() {
         <div className="fixed inset-x-0 bottom-0 z-40 bg-gradient-to-t from-cream-50 via-cream-50/95 to-transparent p-4 pt-8">
           <div className="mx-auto max-w-5xl">
             <button
-              onClick={() => navigate(`/cart${tableId ? `?table=${tableId}` : ""}`)}
+              onClick={() => navigate(`/cart${tableId ? `?tableId=${tableId}` : ""}`)}
               className="flex w-full items-center justify-between rounded-xl bg-forest-900 px-5 py-4 text-white shadow-2xl shadow-forest-900/25 transition-all hover:bg-forest-800 active:scale-[0.99]"
             >
               <div className="flex min-w-0 items-center gap-3">
