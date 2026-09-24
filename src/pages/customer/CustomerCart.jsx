@@ -97,6 +97,7 @@ export default function CustomerCart() {
       });
 
       const order = res?.data?.data;
+      toast.success("Order placed", `Your order ${order?.orderNumber ? `(${order.orderNumber}) ` : ""}has been sent to the kitchen.`);
       dispatch({ type: "CLEAR" });
       navigate(`/order-confirm${tableId ? `?tableId=${tableId}` : ""}`, {
         state: { order, cartSnapshot },

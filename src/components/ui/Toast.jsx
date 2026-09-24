@@ -56,8 +56,14 @@ function ToastItem({ toast, onRemove }) {
     );
 }
 
+const positionClasses = {
+    "top-center": "top-5 left-1/2 -translate-x-1/2 items-center px-4 w-full sm:w-auto sm:px-0",
+    "bottom-right": "bottom-5 right-5 items-end",
+};
+
 export function ToastProvider({ children }) {
     const [toasts, setToasts] = useState([]);
+    const [position, setPosition] = useState("bottom-right");
 
     const remove = useCallback((id) => {
         setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -74,12 +80,13 @@ export function ToastProvider({ children }) {
         error: (title, message) => add({ type: "error", title, message }),
         warning: (title, message) => add({ type: "warning", title, message }),
         info: (title, message) => add({ type: "info", title, message }),
+        setPosition,
     };
 
     return (
         <ToastContext.Provider value={value}>
             {children}
-            <div className="fixed bottom-5 right-5 z-[100] flex flex-col gap-2">
+            <div className={`fixed z-[100] flex flex-col gap-2 ${positionClasses[position]}`}>
                 {toasts.map((t) => (
                     <ToastItem key={t.id} toast={t} onRemove={remove} />
                 ))}

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   Plus,
   RefreshCw,
@@ -62,6 +62,8 @@ const SOURCE_LABEL = {
   STAFF: "Staff",
   CUSTOMER_QR: "QR order",
 };
+
+const POLL_MS = 15000;
 
 /* =========================================================
  * Helpers
@@ -350,9 +352,11 @@ export default function Orders() {
   const [sortKey, setSortKey] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
 
-  const loadOrders = useCallback(async () => {
+  const prevTotalRef = useRef(null);
+
+  const loadOrders = useCallback(async ({ silent = false } = {}) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
 
       const { sort, order } =
       SORT_OPTIONS[sortKey] ?? SORT_OPTIONS[0];
@@ -372,22 +376,42 @@ export default function Orders() {
           ? body.data
           : [];
 
+      const newTotal = Number(body?.total ?? 0);
+
+      if (silent && prevTotalRef.current != null && newTotal > prevTotalRef.current) {
+        const arrived = newTotal - prevTotalRef.current;
+
+        toast.success(
+            arrived === 1 ? "New order received" : `${arrived} new orders received`,
+            "The orders list has been refreshed."
+        );
+      }
+      prevTotalRef.current = newTotal;
+
       setOrders(orderList.map(normalizeOrder));
-      setTotal(Number(body?.total ?? 0));
+      setTotal(newTotal);
     } catch (error) {
       console.error("Failed to load orders:", error);
 
-      toast.error(
-          "Failed to load",
-          "Could not load orders."
-      );
+      if (!silent) {
+        toast.error(
+            "Failed to load",
+            "Could not load orders."
+        );
+      }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [page, limit, statusFilter, source, sortKey, toast]);
 
   useEffect(() => {
     loadOrders();
+  }, [loadOrders]);
+
+  // Poll in the background so new customer orders show up without a manual refresh.
+  useEffect(() => {
+    const interval = setInterval(() => loadOrders({ silent: true }), POLL_MS);
+    return () => clearInterval(interval);
   }, [loadOrders]);
 
   const handleStatusTab = (value) => {

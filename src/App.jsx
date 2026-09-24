@@ -1,7 +1,9 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
+import { useToast } from "./components/ui/Toast";
 
 // Admin
 import AdminLogin from "./pages/admin/AdminLogin";
@@ -26,11 +28,25 @@ import CustomerMenu from "./pages/customer/CustomerMenu";
 import CustomerCart from "./pages/customer/CustomerCart";
 import OrderConfirm from "./pages/customer/OrderConfirm";
 
+const CUSTOMER_PATHS = ["/", "/menu", "/cart", "/order-confirm"];
+
+function ToastPositionSync() {
+  const location = useLocation();
+  const { setPosition } = useToast();
+
+  useEffect(() => {
+    setPosition(CUSTOMER_PATHS.includes(location.pathname) ? "top-center" : "bottom-right");
+  }, [location.pathname, setPosition]);
+
+  return null;
+}
+
 export default function App() {
   return (
     <AuthProvider>
       <CartProvider>
         <BrowserRouter>
+          <ToastPositionSync />
           <Routes>
             {/* ── Customer Routes ── */}
             <Route path="/" element={<CustomerWelcome />} />
