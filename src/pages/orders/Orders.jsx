@@ -10,11 +10,16 @@ import {
   ShoppingBag,
   Clock,
   Users,
+  Eye,
+  Ban,
 } from "lucide-react";
 
 import Pagination from "../../components/shared/pagination";
 import { useToast } from "../../components/ui/Toast.jsx";
-import { getOrders } from "../../api/order/order.api";
+import ConfirmDialog from "../../components/ui/ConfirmDialog.jsx";
+import OrderFormModal from "../../components/common/order/modals/OrderFormModal.jsx";
+import OrderDetailModal from "../../components/common/order/modals/OrderDetailModal.jsx";
+import { getOrders, createOrder, updateOrder, cancelOrder } from "../../api/order/order.api";
 
 /* =========================================================
  * Constants
@@ -73,6 +78,7 @@ function normalizeOrder(o) {
   return {
     id: o.id,
     displayId: o.orderNumber ?? `#${o.id ?? "—"}`,
+    tableId: o.tableId ?? o.table?.id ?? null,
     table: o.tableNumber ?? "—",
     itemCount: Array.isArray(o.items) ? o.items.length : 0,
     total: Number(o.totalAmount ?? 0),
@@ -125,11 +131,15 @@ function countActive({ source }) {
   return source ? 1 : 0;
 }
 
+function isTerminalStatus(status) {
+  return status === "paid" || status === "cancelled";
+}
+
 /* =========================================================
  * Order Card
  * ========================================================= */
 
-function OrderCard({ order, onClick }) {
+function OrderCard({ order, onClick, onCancel }) {
   const elapsedMin = order.createdAtRaw
       ? Math.floor(
           (Date.now() - new Date(order.createdAtRaw).getTime()) / 60000
@@ -214,6 +224,15 @@ function OrderCard({ order, onClick }) {
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
+          {!isTerminalStatus(order.status) && (
+              <button
+                  onClick={(e) => { e.stopPropagation(); onCancel?.(order); }}
+                  title="Cancel order"
+                  className="p-1 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50"
+              >
+                <Ban size={13} />
+              </button>
+          )}
           <span className="font-bold text-forest-900 text-base">
             {formatCurrency(order.total)}
           </span>
@@ -252,6 +271,9 @@ function SkeletonRows({ count = 8 }) {
         </td>
         <td className="table-td">
           <div className="h-5 bg-cream-200 rounded-full w-20" />
+        </td>
+        <td className="table-td">
+          <div className="h-3 bg-cream-200 rounded w-12 ml-auto" />
         </td>
       </tr>
   ));
@@ -352,6 +374,13 @@ export default function Orders() {
   const [sortKey, setSortKey] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
 
+  const [formOpen, setFormOpen] = useState(false);
+  const [formMode, setFormMode] = useState("create");
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [detailOrderId, setDetailOrderId] = useState(null);
+  const [cancelTarget, setCancelTarget] = useState(null);
+  const [cancelLoading, setCancelLoading] = useState(false);
+
   const prevTotalRef = useRef(null);
 
   const loadOrders = useCallback(async ({ silent = false } = {}) => {
@@ -440,15 +469,68 @@ export default function Orders() {
   const advancedActiveCount = countActive({ source });
 
   const handleOrderClick = (order) => {
-    console.log("Selected order:", order);
+    setDetailOrderId(order.id);
+  };
 
-    // TODO:
-    // Navigate to order detail page here.
-    // Example:
-    // navigate(`/orders/${order.id}`);
+  const handleAddOrder = () => {
+    setFormMode("create");
+    setSelectedOrder(null);
+    setFormOpen(true);
+  };
+
+  const handleEditOrder = (order) => {
+    setDetailOrderId(null);
+    setFormMode("edit");
+    setSelectedOrder(order);
+    setFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setFormOpen(false);
+    setSelectedOrder(null);
+  };
+
+  const handleFormSubmit = async (formData) => {
+    try {
+      if (formMode === "edit") {
+        await updateOrder(selectedOrder.id, formData);
+        toast.success("Order updated", `${selectedOrder.displayId} was saved successfully.`);
+      } else {
+        await createOrder(formData);
+        toast.success("Order created", "The new order was sent to the kitchen.");
+      }
+      await loadOrders();
+      handleCloseForm();
+    } catch (error) {
+      toast.error(
+          "Save failed",
+          error?.response?.data?.message || "Please check your inputs and try again."
+      );
+    }
+  };
+
+  const handleRequestCancel = (order) => {
+    setDetailOrderId(null);
+    setCancelTarget(order);
+  };
+
+  const handleCancelConfirm = async () => {
+    if (!cancelTarget) return;
+    setCancelLoading(true);
+    try {
+      await cancelOrder(cancelTarget.id);
+      toast.success("Order cancelled", `${cancelTarget.displayId} has been cancelled.`);
+      await loadOrders();
+    } catch {
+      toast.error("Cancel failed", "Could not cancel the order. Please try again.");
+    } finally {
+      setCancelLoading(false);
+      setCancelTarget(null);
+    }
   };
 
   return (
+      <>
       <div className="space-y-4 fade-in">
         {/* Toolbar */}
         <div className="flex flex-col gap-3">
@@ -527,7 +609,10 @@ export default function Orders() {
             </button>
 
             {/* New order */}
-            <button className="btn-primary flex items-center gap-1.5 text-xs py-2 px-3">
+            <button
+                onClick={handleAddOrder}
+                className="btn-primary flex items-center gap-1.5 text-xs py-2 px-3"
+            >
               <Plus size={13} />
               <span className="hidden sm:inline">New Order</span>
             </button>
@@ -568,6 +653,7 @@ export default function Orders() {
                             key={order.id}
                             order={order}
                             onClick={handleOrderClick}
+                            onCancel={handleRequestCancel}
                         />
                     ))}
                   </div>
@@ -604,6 +690,7 @@ export default function Orders() {
                     </th>
                     <th className="table-th">Time</th>
                     <th className="table-th">Status</th>
+                    <th className="table-th text-right">Actions</th>
                   </tr>
                   </thead>
 
@@ -661,6 +748,27 @@ export default function Orders() {
                           </span>
                               </div>
                             </td>
+
+                            <td className="table-td" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex justify-end gap-1.5">
+                                <button
+                                    onClick={() => handleOrderClick(order)}
+                                    className="p-1.5 rounded-lg hover:bg-cream-100"
+                                    title="View details"
+                                >
+                                  <Eye size={13} />
+                                </button>
+                                {!isTerminalStatus(order.status) && (
+                                    <button
+                                        onClick={() => handleRequestCancel(order)}
+                                        className="p-1.5 rounded-lg hover:bg-red-50 text-red-500"
+                                        title="Cancel order"
+                                    >
+                                      <Ban size={13} />
+                                    </button>
+                                )}
+                              </div>
+                            </td>
                           </tr>
                       ))
                   )}
@@ -689,5 +797,38 @@ export default function Orders() {
             </div>
         )}
       </div>
+
+      {/* Create / Edit Modal */}
+      <OrderFormModal
+          open={formOpen}
+          onClose={handleCloseForm}
+          onSubmit={handleFormSubmit}
+          initial={selectedOrder}
+          mode={formMode}
+      />
+
+      {/* Order Detail Modal */}
+      <OrderDetailModal
+          open={!!detailOrderId}
+          orderId={detailOrderId}
+          onClose={() => setDetailOrderId(null)}
+          onEdit={handleEditOrder}
+          onRequestCancel={handleRequestCancel}
+          onChanged={loadOrders}
+      />
+
+      {/* Cancel Confirm Dialog */}
+      <ConfirmDialog
+          open={!!cancelTarget}
+          onClose={() => setCancelTarget(null)}
+          onConfirm={handleCancelConfirm}
+          loading={cancelLoading}
+          variant="danger"
+          title="Cancel order?"
+          description={`${cancelTarget?.displayId ?? "This order"} will be marked as cancelled. This cannot be undone.`}
+          confirmLabel="Yes, cancel it"
+          cancelLabel="Keep it"
+      />
+      </>
   );
 }
