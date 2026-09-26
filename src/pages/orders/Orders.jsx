@@ -676,7 +676,52 @@ export default function Orders() {
             </>
         ) : (
             /* Table View */
-            <div className="card p-0 overflow-hidden">
+            <>
+              {/* Mobile cards (table view collapses to cards below sm) */}
+              <div className="sm:hidden space-y-3">
+                {loading ? (
+                    Array.from({ length: limit }).map((_, index) => (
+                        <div
+                            key={index}
+                            className="card p-4 flex gap-3 animate-pulse"
+                        >
+                          <div className="w-10 h-10 rounded-xl bg-cream-200 shrink-0" />
+
+                          <div className="flex-1 space-y-2 py-1">
+                            <div className="h-3 bg-cream-200 rounded w-2/3" />
+                            <div className="h-2 bg-cream-200 rounded w-1/2" />
+                          </div>
+                        </div>
+                    ))
+                ) : orders.length > 0 ? (
+                    orders.map((order) => (
+                        <OrderCard
+                            key={order.id}
+                            order={order}
+                            onClick={handleOrderClick}
+                            onCancel={handleRequestCancel}
+                        />
+                    ))
+                ) : (
+                    <div className="card text-center py-12 text-gray-400">
+                      No orders found.
+                    </div>
+                )}
+
+                <Pagination
+                    total={total}
+                    page={page}
+                    limit={limit}
+                    onPageChange={setPage}
+                    onLimitChange={(value) => {
+                      setLimit(value);
+                      setPage(1);
+                    }}
+                />
+              </div>
+
+              {/* Desktop table */}
+              <div className="hidden sm:block card p-0 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[560px]">
                   <thead className="border-b border-cream-200">
@@ -794,7 +839,8 @@ export default function Orders() {
                     }}
                 />
               </div>
-            </div>
+              </div>
+            </>
         )}
       </div>
 
