@@ -100,7 +100,9 @@ export default function OrderConfirm() {
 
   const [order, setOrder] = useState(location.state?.order || null);
   const [cartSnapshot] = useState(location.state?.cartSnapshot || cart.items);
-  const [initialOrderId] = useState(() => location.state?.order?.id || sessionStorage.getItem(LAST_ORDER_KEY));
+  const [initialOrderId] = useState(
+    () => location.state?.order?.id || params.get("orderId") || sessionStorage.getItem(LAST_ORDER_KEY)
+  );
   const [loading, setLoading] = useState(!location.state?.order && !!initialOrderId);
   const [notFound, setNotFound] = useState(!location.state?.order && !initialOrderId);
   const pollTimer = useRef(null);
@@ -270,6 +272,12 @@ export default function OrderConfirm() {
 
         <button onClick={handleNewOrder} className="btn-secondary w-full rounded-xl py-3.5 text-base">
           Order More Items
+        </button>
+        <button
+          onClick={() => navigate(`/orders${tableId ? `?tableId=${tableId}` : ""}`)}
+          className="mt-3 w-full rounded-xl py-2.5 text-center text-sm font-semibold text-forest-700 transition-colors hover:text-forest-900"
+        >
+          View Order History
         </button>
       </main>
     </div>

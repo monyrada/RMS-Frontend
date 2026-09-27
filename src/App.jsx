@@ -27,8 +27,9 @@ import CustomerWelcome from "./pages/customer/CustomerWelcome";
 import CustomerMenu from "./pages/customer/CustomerMenu";
 import CustomerCart from "./pages/customer/CustomerCart";
 import OrderConfirm from "./pages/customer/OrderConfirm";
+import OrderHistory from "./pages/customer/OrderHistory";
 
-const CUSTOMER_PATHS = ["/", "/menu", "/cart", "/order-confirm"];
+const CUSTOMER_PATHS = ["/", "/menu", "/cart", "/order-confirm", "/orders"];
 
 function ToastPositionSync() {
   const location = useLocation();
@@ -53,6 +54,7 @@ export default function App() {
             <Route path="/menu" element={<CustomerMenu />} />
             <Route path="/cart" element={<CustomerCart />} />
             <Route path="/order-confirm" element={<OrderConfirm />} />
+            <Route path="/orders" element={<OrderHistory />} />
 
             {/* ── Admin Routes ── */}
             <Route path="/admin/login" element={<AdminLogin />} />
