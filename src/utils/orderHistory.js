@@ -26,7 +26,7 @@ function writeAll(entries) {
 }
 
 /** Records a newly placed order. Call right after a successful createOrder(). */
-export function recordOrder({ id, orderNumber, tableId, tableNumber, total, itemCount, items }) {
+export function recordOrder({ id, orderNumber, tableId, tableNumber, total, itemCount, items, status, note }) {
   if (!id) return;
 
   const entries = readAll().filter((entry) => entry.id !== id);
@@ -37,7 +37,11 @@ export function recordOrder({ id, orderNumber, tableId, tableNumber, total, item
     tableNumber: tableNumber ?? null,
     total: Number(total) || 0,
     itemCount: Number(itemCount) || 0,
-    items: Array.isArray(items) ? items.map((item) => ({ name: item.name, qty: Number(item.qty) || 1 })) : [],
+    items: Array.isArray(items)
+      ? items.map((item) => ({ name: item.name, qty: Number(item.qty) || 1, unitPrice: Number(item.unitPrice) || 0 }))
+      : [],
+    status: status || "PENDING",
+    note: note || "",
     createdAt: new Date().toISOString(),
   });
   writeAll(entries);

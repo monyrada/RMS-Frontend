@@ -106,7 +106,9 @@ export default function CustomerCart() {
         tableNumber: tableLabel,
         total: order?.totalAmount ?? grandTotal,
         itemCount: count,
-        items: cartSnapshot.map((item) => ({ name: item.name, qty: item.qty })),
+        items: cartSnapshot.map((item) => ({ name: item.name, qty: item.qty, unitPrice: item.price })),
+        status: order?.status,
+        note,
       });
       dispatch({ type: "CLEAR" });
       navigate(`/order-confirm${tableId ? `?tableId=${tableId}` : ""}`, {

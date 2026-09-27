@@ -15,6 +15,34 @@ function summarizeItems(items) {
   return `${first} +${items.length - 1} more`;
 }
 
+/** Reshapes a cached history entry into the order shape OrderConfirm expects,
+ *  so tapping into an order shows the cached snapshot immediately instead of
+ *  depending on a fresh fetch (the order-detail endpoint isn't reliably
+ *  reachable for anonymous customers on every deployment). */
+function toOrderPayload(entry) {
+  const items = (entry.items || []).map((item, index) => ({
+    id: `local-${entry.id}-${index}`,
+    menuId: null,
+    menuName: item.name,
+    quantity: item.qty,
+    unitPrice: item.unitPrice || 0,
+    subtotal: (item.unitPrice || 0) * item.qty,
+  }));
+  const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
+
+  return {
+    id: entry.id,
+    orderNumber: entry.orderNumber,
+    status: entry.status,
+    totalAmount: entry.total,
+    subtotal,
+    tax: Math.max(0, Number((entry.total - subtotal).toFixed(2))),
+    discount: 0,
+    note: entry.note || "",
+    items,
+  };
+}
+
 function formatWhen(iso) {
   const date = new Date(iso);
   if (!iso || Number.isNaN(date.getTime())) return "";
@@ -120,7 +148,11 @@ export default function OrderHistory() {
               return (
                 <button
                   key={entry.id}
-                  onClick={() => navigate(`/order-confirm?orderId=${entry.id}${tableId ? `&tableId=${tableId}` : ""}`)}
+                  onClick={() =>
+                    navigate(`/order-confirm?orderId=${entry.id}${tableId ? `&tableId=${tableId}` : ""}`, {
+                      state: { order: toOrderPayload(entry), cartSnapshot: [] },
+                    })
+                  }
                   className="card flex w-full items-center justify-between gap-3 p-4 text-left transition-transform active:scale-[0.99]"
                 >
                   <div className="min-w-0">
