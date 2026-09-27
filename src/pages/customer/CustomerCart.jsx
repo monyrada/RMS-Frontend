@@ -24,6 +24,7 @@ import {
 import { useCart } from "../../context/CartContext";
 import { useToast } from "../../components/ui/Toast";
 import { createOrder } from "../../api/order/order.api";
+import { recordOrder } from "../../utils/orderHistory";
 
 const iconMap = {
   Beef,
@@ -98,6 +99,15 @@ export default function CustomerCart() {
 
       const order = res?.data?.data;
       toast.success("Order placed", `Your order ${order?.orderNumber ? `(${order.orderNumber}) ` : ""}has been sent to the kitchen.`);
+      recordOrder({
+        id: order?.id,
+        orderNumber: order?.orderNumber,
+        tableId,
+        tableNumber: tableLabel,
+        total: order?.totalAmount ?? grandTotal,
+        itemCount: count,
+        items: cartSnapshot.map((item) => ({ name: item.name, qty: item.qty })),
+      });
       dispatch({ type: "CLEAR" });
       navigate(`/order-confirm${tableId ? `?tableId=${tableId}` : ""}`, {
         state: { order, cartSnapshot },

@@ -13,6 +13,7 @@ import {
   Milk,
   Minus,
   Plus,
+  Receipt,
   Salad,
   Sandwich,
   Search,
@@ -461,7 +462,20 @@ export default function CustomerMenu() {
                 </button>
               )}
             </div>
-            {tableId && <span className="shrink-0 rounded-lg bg-forest-100 px-2.5 py-2 text-xs font-bold text-forest-700">Table {tableLabel}</span>}
+            <div className="flex shrink-0 items-center gap-2">
+              {tableId && (
+                <span className="flex h-10 items-center whitespace-nowrap rounded-lg border border-cream-200 bg-white px-3 text-xs font-bold text-forest-700 shadow-sm">
+                  Table {tableLabel}
+                </span>
+              )}
+              <button
+                onClick={() => navigate(`/orders${tableId ? `?tableId=${tableId}` : ""}`)}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-cream-200 bg-white text-gray-500 shadow-sm transition-colors hover:border-forest-300 hover:text-forest-700"
+                aria-label="View order history"
+              >
+                <Receipt size={18} />
+              </button>
+            </div>
           </div>
         </div>
 

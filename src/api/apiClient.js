@@ -28,10 +28,19 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
+        // Only force a login redirect when the failed request was actually
+        // authenticated (i.e. an admin session expired/was revoked). Customer
+        // QR-ordering calls never attach a token, so a 401 there is just a
+        // permissions gap to let the caller's own .catch handle — not a
+        // reason to yank an anonymous diner back to the login screen.
+        const wasAuthenticated = Boolean(error.config?.headers?.Authorization);
+
+        if (error.response?.status === 401 && wasAuthenticated) {
             localStorage.removeItem("access_token");
 
-            window.location.href = "/login";
+            if (!window.location.pathname.startsWith("/admin/login")) {
+                window.location.href = "/admin/login";
+            }
         }
 
         return Promise.reject(error);
