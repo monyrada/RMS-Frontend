@@ -21,6 +21,9 @@ export default {
           500: "#4aa87e",
           400: "#6dc49a",
           300: "#9adcb8",
+          200: "#c4ecd6",
+          100: "#e0f5ea",
+          50: "#f0faf5",
         },
         amber: {
           rms: "#e8a020",

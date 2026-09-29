@@ -13,7 +13,6 @@ import {
   Milk,
   Minus,
   Plus,
-  Receipt,
   Salad,
   Sandwich,
   Search,
@@ -220,46 +219,54 @@ function ItemModal({ item, qty, onAdd, onRemove, onClose }) {
 }
 
 function ItemCard({ item, qty, onAdd, onRemove, onOpen }) {
+  const Icon = iconMap[item.icon] || Utensils;
+
   return (
-    <article className="menu-card fade-in" onClick={() => onOpen(item)}>
-      <FoodVisual item={item} />
-      <div className="flex min-h-[178px] flex-col p-3.5">
-        <div className="mb-2 flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <h3 className="line-clamp-2 text-sm font-bold leading-snug text-forest-900">{item.name}</h3>
-            <KhmerText className="mt-0.5 line-clamp-1 text-xs font-semibold text-forest-700">{item.nameKh}</KhmerText>
+    <article
+      className="fade-in group cursor-pointer overflow-hidden rounded-2xl border border-cream-200 bg-white p-2.5 shadow-md transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl active:scale-[0.98]"
+      onClick={() => onOpen(item)}
+    >
+      <div className={`relative aspect-square overflow-hidden rounded-xl bg-gradient-to-br ${item.accent}`}>
+        {item.imageUrl ? (
+          <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center transition-transform duration-500 group-hover:scale-110">
+            <div className="rounded-full bg-white/80 p-5 shadow-sm ring-1 ring-white">
+              <Icon size={38} className="text-forest-800" strokeWidth={1.7} />
+            </div>
           </div>
-          <span className="shrink-0 text-sm font-black text-forest-700">${item.price.toFixed(2)}</span>
-        </div>
-        <p className="line-clamp-2 text-xs leading-relaxed text-gray-500">{item.description}</p>
-        <KhmerText className="mt-1 line-clamp-2 text-xs text-gray-500">{item.descriptionKh}</KhmerText>
-        <div className="mt-3">
-          <ItemTags item={item} />
-        </div>
-        <div className="mt-auto pt-3">
+        )}
+        {(item.popular || item.spicy) && (
+          <span className="absolute left-2 top-2 rounded-full bg-emerald-600 px-3 py-1 text-sm font-semibold text-white shadow-sm">
+            {item.popular ? "Most ordered" : "Spicy"}
+          </span>
+        )}
+        <div className="absolute bottom-2 right-2" onClick={(e) => e.stopPropagation()}>
           {qty === 0 ? (
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onAdd(item);
-              }}
-              className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-forest-700 py-2.5 text-sm font-semibold text-white transition-all hover:bg-forest-600 active:scale-[0.98]"
+              onClick={() => onAdd(item)}
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg transition-all duration-200 hover:scale-110 hover:bg-emerald-500 active:scale-90"
+              aria-label={`Add ${item.name}`}
             >
-              <Plus size={14} />
-              Add
+              <Plus size={24} />
             </button>
           ) : (
-            <div className="flex items-center justify-between rounded-lg bg-cream-50 p-1" onClick={(e) => e.stopPropagation()}>
-              <button onClick={() => onRemove(item.id)} className="qty-btn bg-white text-forest-700 shadow-sm hover:bg-cream-100" aria-label="Decrease quantity">
-                <Minus size={13} />
+            <div className="pop-in flex items-center gap-1 rounded-full bg-white p-1 shadow-lg">
+              <button onClick={() => onRemove(item.id)} className="flex h-9 w-9 items-center justify-center rounded-full text-forest-700 transition-transform active:scale-90" aria-label="Decrease quantity">
+                <Minus size={18} />
               </button>
-              <span className="w-7 text-center text-base font-black text-forest-900">{qty}</span>
-              <button onClick={() => onAdd(item)} className="qty-btn bg-forest-700 text-white hover:bg-forest-600" aria-label="Increase quantity">
-                <Plus size={13} />
+              <span className="min-w-5 text-center text-base font-black text-forest-900">{qty}</span>
+              <button onClick={() => onAdd(item)} className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-600 text-white transition-transform active:scale-90" aria-label="Increase quantity">
+                <Plus size={18} />
               </button>
             </div>
           )}
         </div>
+      </div>
+      <div className="px-1 pb-1 pt-3">
+        <h3 className="line-clamp-2 text-base font-semibold leading-snug text-forest-900">{item.name}</h3>
+        <KhmerText className="line-clamp-1 text-base text-gray-600">{item.nameKh}</KhmerText>
+        <p className="mt-0.5 text-base font-bold text-forest-900">${item.price.toFixed(2)}</p>
       </div>
     </article>
   );
@@ -443,37 +450,44 @@ export default function CustomerMenu() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate(-1)}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-cream-100 hover:text-forest-700"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-forest-800 transition-all hover:bg-cream-100 active:scale-90"
               aria-label="Go back"
             >
-              <ChevronLeft size={20} />
+              <ChevronLeft size={24} strokeWidth={2.5} />
             </button>
             <div className="relative flex-1">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search dishes"
-                className="input py-2.5 pl-9 pr-9"
+                className="input rounded-full py-3 pl-11 pr-10 text-base shadow-sm transition-shadow focus:shadow-md"
               />
               {search && (
                 <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-forest-700" aria-label="Clear search">
-                  <X size={15} />
+                  <X size={17} />
                 </button>
               )}
             </div>
             <div className="flex shrink-0 items-center gap-2">
               {tableId && (
-                <span className="flex h-10 items-center whitespace-nowrap rounded-lg border border-cream-200 bg-white px-3 text-xs font-bold text-forest-700 shadow-sm">
+                <span className="flex h-11 items-center gap-1.5 whitespace-nowrap rounded-full border border-forest-200 bg-forest-50 px-3.5 text-sm font-bold text-forest-800 shadow-sm">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
                   Table {tableLabel}
                 </span>
               )}
               <button
                 onClick={() => navigate(`/orders${tableId ? `?tableId=${tableId}` : ""}`)}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-cream-200 bg-white text-gray-500 shadow-sm transition-colors hover:border-forest-300 hover:text-forest-700"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-forest-50 text-forest-700 transition-all hover:bg-forest-100 active:scale-90"
                 aria-label="View order history"
               >
-                <Receipt size={18} />
+                <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    fill="currentColor"
+                    d="M6 2h12a1 1 0 0 1 1 1v18.2a.5.5 0 0 1-.8.4L16 20l-2 1.6a.5.5 0 0 1-.6 0L12 20.5l-1.4 1.1a.5.5 0 0 1-.6 0L8 20l-2.2 1.6a.5.5 0 0 1-.8-.4V3a1 1 0 0 1 1-1Z"
+                  />
+                  <path stroke="white" strokeWidth="1.8" strokeLinecap="round" d="M8.5 7h7M8.5 11h7M8.5 15h4" />
+                </svg>
               </button>
             </div>
           </div>
@@ -488,14 +502,14 @@ export default function CustomerMenu() {
               <button
                 key={cat.id ?? "__all"}
                 onClick={() => handleCategoryChange(cat.id)}
-                className={`flex shrink-0 items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold transition-all active:scale-[0.98] sm:text-sm ${
-                  active ? "bg-forest-700 text-white shadow-sm" : "border border-cream-200 bg-cream-50 text-gray-600 hover:border-forest-300 hover:text-forest-700"
+                className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-all duration-200 active:scale-95 sm:text-base ${
+                  active ? "bg-forest-700 text-white shadow-md" : "border border-cream-200 bg-white text-gray-600 shadow-sm hover:-translate-y-0.5 hover:border-forest-300 hover:text-forest-700"
                 }`}
               >
-                <Icon size={14} />
+                <Icon size={18} />
                 <span>
                   {cat.label}
-                  {cat.labelKh && <span className="ml-1 text-[11px] opacity-80">{cat.labelKh}</span>}
+                  {cat.labelKh && <span className="ml-1 text-sm opacity-80">{cat.labelKh}</span>}
                 </span>
               </button>
             );

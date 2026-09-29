@@ -89,6 +89,14 @@ body {
 }
 .fade-in { animation: fadeIn 0.4s ease-out; }
 
+/* Pop in */
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.6); }
+  70% { transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.pop-in { animation: popIn 0.25s ease-out; transform-origin: bottom right; }
+
 /* Hide scrollbar utility */
 .scrollbar-none::-webkit-scrollbar { display: none; }
 .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
