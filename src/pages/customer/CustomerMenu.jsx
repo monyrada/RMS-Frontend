@@ -231,13 +231,13 @@ function ItemCard({ item, qty, onAdd, onRemove, onOpen }) {
           <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
         ) : (
           <div className="flex h-full w-full items-center justify-center transition-transform duration-500 group-hover:scale-110">
-            <div className="rounded-full bg-white/80 p-5 shadow-sm ring-1 ring-white">
+            <div className="rounded-full bg-white/80 p-5 shadow-sm lg:p-4 ring-1 ring-white">
               <Icon size={38} className="text-forest-800" strokeWidth={1.7} />
             </div>
           </div>
         )}
         {(item.popular || item.spicy) && (
-          <span className="absolute left-2 top-2 rounded-full bg-emerald-600 px-3 py-1 text-sm font-semibold text-white shadow-sm">
+          <span className="absolute left-2 top-2 rounded-full bg-emerald-600 px-3 py-1 text-sm font-semibold text-white shadow-sm lg:px-2.5 lg:text-xs">
             {item.popular ? "Most ordered" : "Spicy"}
           </span>
         )}
@@ -245,10 +245,10 @@ function ItemCard({ item, qty, onAdd, onRemove, onOpen }) {
           {qty === 0 ? (
             <button
               onClick={() => onAdd(item)}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg transition-all duration-200 hover:scale-110 hover:bg-emerald-500 active:scale-90"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg lg:h-9 lg:w-9 transition-all duration-200 hover:scale-110 hover:bg-emerald-500 active:scale-90"
               aria-label={`Add ${item.name}`}
             >
-              <Plus size={24} />
+              <Plus size={22} />
             </button>
           ) : (
             <div className="pop-in flex items-center gap-1 rounded-full bg-white p-1 shadow-lg">
@@ -264,9 +264,9 @@ function ItemCard({ item, qty, onAdd, onRemove, onOpen }) {
         </div>
       </div>
       <div className="px-1 pb-1 pt-3">
-        <h3 className="line-clamp-2 text-base font-semibold leading-snug text-forest-900">{item.name}</h3>
-        <KhmerText className="line-clamp-1 text-base text-gray-600">{item.nameKh}</KhmerText>
-        <p className="mt-0.5 text-base font-bold text-forest-900">${item.price.toFixed(2)}</p>
+        <h3 className="line-clamp-2 text-base font-semibold leading-snug lg:text-sm text-forest-900">{item.name}</h3>
+        <KhmerText className="line-clamp-1 text-base text-gray-600 lg:text-sm">{item.nameKh}</KhmerText>
+        <p className="mt-0.5 text-base font-bold text-forest-900 lg:text-sm">${item.price.toFixed(2)}</p>
       </div>
     </article>
   );
@@ -446,7 +446,7 @@ export default function CustomerMenu() {
   return (
     <div className="min-h-screen bg-cream-50">
       <header className="sticky top-0 z-30 border-b border-cream-200 bg-white/95 shadow-sm backdrop-blur">
-        <div className="mx-auto max-w-5xl px-4 py-3 sm:px-6">
+        <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate(-1)}
@@ -461,7 +461,7 @@ export default function CustomerMenu() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search dishes"
-                className="input rounded-full py-3 pl-11 pr-10 text-base shadow-sm transition-shadow focus:shadow-md"
+                className="input rounded-full py-3 pl-11 pr-10 text-base lg:py-2.5 lg:text-sm shadow-sm transition-shadow focus:shadow-md"
               />
               {search && (
                 <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-forest-700" aria-label="Clear search">
@@ -493,7 +493,7 @@ export default function CustomerMenu() {
           </div>
         </div>
 
-        <div ref={catRef} className="scrollbar-none mx-auto flex max-w-5xl gap-2 overflow-x-auto px-4 pb-3 sm:px-6">
+        <div ref={catRef} className="scrollbar-none mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 pb-3 sm:px-6">
           {categoryTabs.map((cat) => {
             const Icon = iconMap[cat.icon] || Utensils;
             const active = activeCategory === cat.id;
@@ -502,7 +502,7 @@ export default function CustomerMenu() {
               <button
                 key={cat.id ?? "__all"}
                 onClick={() => handleCategoryChange(cat.id)}
-                className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-all duration-200 active:scale-95 sm:text-base ${
+                className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-all duration-200 active:scale-95 sm:text-base lg:py-2 lg:text-sm ${
                   active ? "bg-forest-700 text-white shadow-md" : "border border-cream-200 bg-white text-gray-600 shadow-sm hover:-translate-y-0.5 hover:border-forest-300 hover:text-forest-700"
                 }`}
               >
@@ -517,7 +517,7 @@ export default function CustomerMenu() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 pb-32 pt-5 sm:px-6">
+      <main className="mx-auto max-w-7xl px-4 pb-32 pt-5 sm:px-6">
         {scanStatus === "blocked" && (
           <div className="mb-5 flex items-center gap-3 rounded-xl border border-amber-rms/30 bg-amber-rms/10 px-4 py-3">
             <AlertTriangle size={17} className="shrink-0 text-amber-700" />
@@ -552,7 +552,7 @@ export default function CustomerMenu() {
             </button>
           </div>
         ) : loading ? (
-          <div className="grid grid-cols-1 gap-4 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 lg:gap-5 xl:grid-cols-5 2xl:grid-cols-6">
             {Array.from({ length: 8 }).map((_, index) => (
               <div key={index} className="menu-card animate-pulse">
                 <div className="h-32 bg-cream-200" />
@@ -572,7 +572,7 @@ export default function CustomerMenu() {
             <p className="mt-1 text-sm text-gray-500">Try another search or category.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 lg:gap-5 xl:grid-cols-5 2xl:grid-cols-6">
             {items.map((item) => (
               <ItemCard key={item.id} item={item} qty={getQty(item.id)} onAdd={handleAdd} onRemove={handleRemove} onOpen={setModal} />
             ))}
