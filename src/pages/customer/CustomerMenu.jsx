@@ -175,7 +175,7 @@ function ItemModal({ item, qty, onAdd, onRemove, onClose }) {
           className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-lg bg-white/90 text-gray-500 shadow-sm transition-colors hover:bg-cream-100"
           aria-label="Close item details"
         >
-          <X size={17} />
+          <X size={15} />
         </button>
         <FoodVisual item={item} size="lg" />
         <div className="p-5">
@@ -198,7 +198,7 @@ function ItemModal({ item, qty, onAdd, onRemove, onClose }) {
               }}
               className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-forest-700 py-3.5 font-bold text-white transition-all hover:bg-forest-600 active:scale-[0.98]"
             >
-              <Plus size={18} />
+              <Plus size={14} />
               Add to Order
             </button>
           ) : (
@@ -223,50 +223,50 @@ function ItemCard({ item, qty, onAdd, onRemove, onOpen }) {
 
   return (
     <article
-      className="fade-in group cursor-pointer overflow-hidden rounded-2xl border border-cream-200 bg-white p-2.5 shadow-md transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl active:scale-[0.98]"
+      className="fade-in group cursor-pointer overflow-hidden flex h-full flex-col rounded-xl border border-cream-200 bg-white p-2 shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99]"
       onClick={() => onOpen(item)}
     >
-      <div className={`relative aspect-square overflow-hidden rounded-xl bg-gradient-to-br ${item.accent}`}>
+      <div className={`relative aspect-[4/3] overflow-hidden rounded-lg bg-gradient-to-br ${item.accent}`}>
         {item.imageUrl ? (
-          <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+          <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center transition-transform duration-500 group-hover:scale-110">
-            <div className="rounded-full bg-white/80 p-5 shadow-sm lg:p-4 ring-1 ring-white">
-              <Icon size={38} className="text-forest-800" strokeWidth={1.7} />
+          <div className="flex h-full w-full items-center justify-center transition-transform duration-500 group-hover:scale-105">
+            <div className="rounded-full bg-white/80 p-3.5 ring-1 ring-white">
+              <Icon size={28} className="text-forest-800" strokeWidth={1.7} />
             </div>
           </div>
         )}
         {(item.popular || item.spicy) && (
-          <span className="absolute left-2 top-2 rounded-full bg-emerald-600 px-3 py-1 text-sm font-semibold text-white shadow-sm lg:px-2.5 lg:text-xs">
+          <span className="absolute left-1.5 top-1.5 rounded-full bg-emerald-600 px-2 py-0.5 text-[11px] font-semibold text-white">
             {item.popular ? "Most ordered" : "Spicy"}
           </span>
         )}
-        <div className="absolute bottom-2 right-2" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute bottom-1.5 right-1.5" onClick={(e) => e.stopPropagation()}>
           {qty === 0 ? (
             <button
               onClick={() => onAdd(item)}
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg lg:h-9 lg:w-9 transition-all duration-200 hover:scale-110 hover:bg-emerald-500 active:scale-90"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-white shadow transition-all duration-200 hover:bg-emerald-500 active:scale-90"
               aria-label={`Add ${item.name}`}
             >
-              <Plus size={22} />
+              <Plus size={16} />
             </button>
           ) : (
-            <div className="pop-in flex items-center gap-1 rounded-full bg-white p-1 shadow-lg">
-              <button onClick={() => onRemove(item.id)} className="flex h-9 w-9 items-center justify-center rounded-full text-forest-700 transition-transform active:scale-90" aria-label="Decrease quantity">
-                <Minus size={18} />
+            <div className="pop-in flex items-center gap-0.5 rounded-full bg-white p-0.5 shadow">
+              <button onClick={() => onRemove(item.id)} className="flex h-7 w-7 items-center justify-center rounded-full text-forest-700 transition-transform active:scale-90" aria-label="Decrease quantity">
+                <Minus size={14} />
               </button>
-              <span className="min-w-5 text-center text-base font-black text-forest-900">{qty}</span>
-              <button onClick={() => onAdd(item)} className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-600 text-white transition-transform active:scale-90" aria-label="Increase quantity">
-                <Plus size={18} />
+              <span className="min-w-5 text-center text-sm font-bold text-forest-900">{qty}</span>
+              <button onClick={() => onAdd(item)} className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-600 text-white transition-transform active:scale-90" aria-label="Increase quantity">
+                <Plus size={14} />
               </button>
             </div>
           )}
         </div>
       </div>
-      <div className="px-1 pb-1 pt-3">
-        <h3 className="line-clamp-2 text-base font-semibold leading-snug lg:text-sm text-forest-900">{item.name}</h3>
-        <KhmerText className="line-clamp-1 text-base text-gray-600 lg:text-sm">{item.nameKh}</KhmerText>
-        <p className="mt-0.5 text-base font-bold text-forest-900 lg:text-sm">${item.price.toFixed(2)}</p>
+      <div className="flex flex-1 flex-col px-1 pb-0.5 pt-2.5">
+        <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-forest-900">{item.name}</h3>
+        <KhmerText className="line-clamp-1 text-xs text-gray-500">{item.nameKh}</KhmerText>
+        <p className="mt-auto pt-1 text-sm font-bold text-forest-700">${item.price.toFixed(2)}</p>
       </div>
     </article>
   );
@@ -445,43 +445,43 @@ export default function CustomerMenu() {
 
   return (
     <div className="min-h-screen bg-cream-50">
-      <header className="sticky top-0 z-30 border-b border-cream-200 bg-white/95 shadow-sm backdrop-blur">
-        <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-30 border-b border-cream-200 bg-white/95 backdrop-blur">
+        <div className="mx-auto max-w-7xl px-4 py-2.5 sm:px-6">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={() => navigate(-1)}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-forest-800 transition-all hover:bg-cream-100 active:scale-90"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-forest-800 transition-all hover:bg-cream-100 active:scale-90"
               aria-label="Go back"
             >
-              <ChevronLeft size={24} strokeWidth={2.5} />
+              <ChevronLeft size={20} strokeWidth={2.25} />
             </button>
             <div className="relative flex-1">
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search dishes"
-                className="input rounded-full py-3 pl-11 pr-10 text-base lg:py-2.5 lg:text-sm shadow-sm transition-shadow focus:shadow-md"
+                className="input rounded-full py-2 pl-10 pr-9 text-sm"
               />
               {search && (
                 <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-forest-700" aria-label="Clear search">
-                  <X size={17} />
+                  <X size={15} />
                 </button>
               )}
             </div>
             <div className="flex shrink-0 items-center gap-2">
               {tableId && (
-                <span className="flex h-11 items-center gap-1.5 whitespace-nowrap rounded-full border border-forest-200 bg-forest-50 px-3.5 text-sm font-bold text-forest-800 shadow-sm">
+                <span className="flex h-9 items-center gap-1.5 whitespace-nowrap rounded-full border border-forest-200 bg-forest-50 px-3 text-xs font-semibold text-forest-800">
                   <span className="h-2 w-2 rounded-full bg-emerald-500" />
                   Table {tableLabel}
                 </span>
               )}
               <button
                 onClick={() => navigate(`/orders${tableId ? `?tableId=${tableId}` : ""}`)}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-forest-50 text-forest-700 transition-all hover:bg-forest-100 active:scale-90"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-forest-50 text-forest-700 transition-all hover:bg-forest-100 active:scale-90"
                 aria-label="View order history"
               >
-                <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
                   <path
                     fill="currentColor"
                     d="M6 2h12a1 1 0 0 1 1 1v18.2a.5.5 0 0 1-.8.4L16 20l-2 1.6a.5.5 0 0 1-.6 0L12 20.5l-1.4 1.1a.5.5 0 0 1-.6 0L8 20l-2.2 1.6a.5.5 0 0 1-.8-.4V3a1 1 0 0 1 1-1Z"
@@ -493,7 +493,7 @@ export default function CustomerMenu() {
           </div>
         </div>
 
-        <div ref={catRef} className="scrollbar-none mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 pb-3 sm:px-6">
+        <div ref={catRef} className="scrollbar-none mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 pb-2.5 sm:px-6">
           {categoryTabs.map((cat) => {
             const Icon = iconMap[cat.icon] || Utensils;
             const active = activeCategory === cat.id;
@@ -502,14 +502,14 @@ export default function CustomerMenu() {
               <button
                 key={cat.id ?? "__all"}
                 onClick={() => handleCategoryChange(cat.id)}
-                className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-all duration-200 active:scale-95 sm:text-base lg:py-2 lg:text-sm ${
-                  active ? "bg-forest-700 text-white shadow-md" : "border border-cream-200 bg-white text-gray-600 shadow-sm hover:-translate-y-0.5 hover:border-forest-300 hover:text-forest-700"
+                className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-all duration-200 active:scale-95 ${
+                  active ? "bg-forest-700 text-white" : "border border-cream-200 bg-white text-gray-600 hover:border-forest-300 hover:text-forest-700"
                 }`}
               >
-                <Icon size={18} />
+                <Icon size={15} />
                 <span>
                   {cat.label}
-                  {cat.labelKh && <span className="ml-1 text-sm opacity-80">{cat.labelKh}</span>}
+                  {cat.labelKh && <span className="ml-1 text-xs opacity-80">{cat.labelKh}</span>}
                 </span>
               </button>
             );
@@ -517,7 +517,7 @@ export default function CustomerMenu() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 pb-32 pt-5 sm:px-6">
+      <main className="mx-auto max-w-7xl px-4 pb-28 pt-4 sm:px-6">
         {scanStatus === "blocked" && (
           <div className="mb-5 flex items-center gap-3 rounded-xl border border-amber-rms/30 bg-amber-rms/10 px-4 py-3">
             <AlertTriangle size={17} className="shrink-0 text-amber-700" />
@@ -534,10 +534,10 @@ export default function CustomerMenu() {
           </div>
         )}
 
-        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-4 flex flex-col gap-1.5 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-forest-600">Digital menu</p>
-            <h1 className="mt-1 text-2xl font-black text-forest-900 sm:text-3xl">{search ? "Search results" : activeLabel}</h1>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-forest-600">Digital menu</p>
+            <h1 className="mt-0.5 text-xl font-bold text-forest-900 sm:text-2xl">{search ? "Search results" : activeLabel}</h1>
           </div>
           <p className="text-sm text-gray-500">{loadingItems ? "Loading items..." : `${totalItems} items available`}</p>
         </div>
@@ -552,11 +552,11 @@ export default function CustomerMenu() {
             </button>
           </div>
         ) : loading ? (
-          <div className="grid grid-cols-1 gap-4 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 lg:gap-5 xl:grid-cols-5 2xl:grid-cols-6">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 lg:gap-4 xl:grid-cols-6 2xl:grid-cols-7">
             {Array.from({ length: 8 }).map((_, index) => (
               <div key={index} className="menu-card animate-pulse">
-                <div className="h-32 bg-cream-200" />
-                <div className="space-y-3 p-3.5">
+                <div className="aspect-[4/3] bg-cream-200" />
+                <div className="space-y-2 p-3">
                   <div className="h-4 w-3/4 rounded bg-cream-200" />
                   <div className="h-3 w-full rounded bg-cream-200" />
                   <div className="h-3 w-2/3 rounded bg-cream-200" />
@@ -572,7 +572,7 @@ export default function CustomerMenu() {
             <p className="mt-1 text-sm text-gray-500">Try another search or category.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 lg:gap-5 xl:grid-cols-5 2xl:grid-cols-6">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 lg:gap-4 xl:grid-cols-6 2xl:grid-cols-7">
             {items.map((item) => (
               <ItemCard key={item.id} item={item} qty={getQty(item.id)} onAdd={handleAdd} onRemove={handleRemove} onOpen={setModal} />
             ))}
@@ -589,7 +589,7 @@ export default function CustomerMenu() {
           <div className="mx-auto max-w-5xl">
             <button
               onClick={() => navigate(`/cart${tableId ? `?tableId=${tableId}` : ""}`)}
-              className="flex w-full items-center justify-between rounded-xl bg-forest-900 px-5 py-4 text-white shadow-2xl shadow-forest-900/25 transition-all hover:bg-forest-800 active:scale-[0.99]"
+              className="flex w-full items-center justify-between rounded-xl bg-forest-900 px-4 py-3 text-white shadow-lg shadow-forest-900/20 transition-all hover:bg-forest-800 active:scale-[0.99]"
             >
               <div className="flex min-w-0 items-center gap-3">
                 <div className="relative shrink-0">
