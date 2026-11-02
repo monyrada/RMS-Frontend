@@ -71,6 +71,20 @@ export default function RoleDetailModal({ open, onClose, role, onEdit }) {
                             value={role.description}
                         />
 
+                        {/* ── Permissions ── */}
+                        <div>
+                            <p className="text-[11px] uppercase tracking-wider font-medium text-gray-400 mb-2">Permissions</p>
+                            {role.permissions?.length ? (
+                                <div className="flex flex-wrap gap-1.5">
+                                    {[...role.permissions].sort().map((code) => (
+                                        <span key={code} className="px-2 py-0.5 rounded-full bg-cream-100 text-xs text-gray-600">{code}</span>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-sm text-gray-400">No permissions granted</p>
+                            )}
+                        </div>
+
                         {/* ── Meta ── */}
                         {(role.createdAt || role.updatedAt) && (
                             <div className="flex flex-col gap-1.5 pt-3 border-t border-cream-200">

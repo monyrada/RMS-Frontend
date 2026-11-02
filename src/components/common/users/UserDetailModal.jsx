@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, Phone, Calendar, Clock, Info, Pencil, VenetianMask } from "lucide-react";
+import { Mail, Phone, Calendar, Clock, Info, Pencil, VenetianMask, ShieldCheck } from "lucide-react";
 import Modal from "../../../modal/Modal.jsx";
 
 /* ── Helpers ── */
@@ -108,6 +108,21 @@ export default function UserDetailModal({ open, onClose, user, onEdit }) {
                                 value={formatDate(user.dateOfBirth)}
                             />
                         </div>
+
+                        {/* ── Roles ── */}
+                        <InfoCard
+                            icon={<ShieldCheck size={13} />}
+                            label="Roles"
+                            value={user.roles?.length ? (
+                                <div className="flex flex-wrap gap-1.5">
+                                    {user.roles.map((r) => (
+                                        <span key={r} className="px-2.5 py-0.5 rounded-full bg-white border border-cream-200 text-xs font-medium text-forest-800">
+                                            {r}
+                                        </span>
+                                    ))}
+                                </div>
+                            ) : null}
+                        />
 
                         {/* ── Last login ── */}
                         <InfoCard

@@ -21,6 +21,8 @@ import {
 } from "../../api/table/table.api";
 
 /* Constants */
+import { useAuth } from "../../context/AuthContext";
+
 const DEBOUNCE_MS = 300;
 
 const STATUS_OPTIONS = [
@@ -64,6 +66,7 @@ function SkeletonRows({ count = 8 }) {
 /* Main Component */
 
 export default function Tables() {
+  const { can } = useAuth();
   const toast = useToast();
 
   /* List */
@@ -278,9 +281,13 @@ export default function Tables() {
                 {view === "floor" ? <LayoutList size={15} /> : <LayoutGrid size={15} />}
               </button>
 
+              {can("TABLE_MANAGE") && (
+
               <button onClick={handleAdd} className="btn-primary flex items-center gap-1.5 shrink-0 whitespace-nowrap">
                 <Plus size={14} /> <span>Add Table</span>
               </button>
+
+              )}
             </div>
 
             <FilterBar
@@ -362,8 +369,8 @@ export default function Tables() {
                                 <p className="text-xs text-gray-400 mr-2">{selectedTable.currentGuestName}</p>
                             )}
                             <button onClick={() => handleView(selectedTable)}          className="p-2 rounded-lg hover:bg-cream-100"           title="View QR / details"><QrCode size={15} /></button>
-                            <button onClick={() => handleEdit(selectedTable)}          className="p-2 rounded-lg hover:bg-cream-100"           title="Edit">           <Edit2 size={15} /></button>
-                            <button onClick={() => handleDeleteRequest(selectedTable)} className="p-2 rounded-lg hover:bg-red-50 text-red-500" title="Deactivate">     <Trash2 size={15} /></button>
+                            {can("TABLE_MANAGE") && <button onClick={() => handleEdit(selectedTable)}          className="p-2 rounded-lg hover:bg-cream-100"           title="Edit">           <Edit2 size={15} /></button>}
+                            {can("TABLE_MANAGE") && <button onClick={() => handleDeleteRequest(selectedTable)} className="p-2 rounded-lg hover:bg-red-50 text-red-500" title="Deactivate">     <Trash2 size={15} /></button>}
                           </div>
                         </div>
                       </div>
@@ -422,8 +429,8 @@ export default function Tables() {
                                 <td className="table-td">
                                   <div className="flex justify-end gap-1.5">
                                     <button onClick={() => handleView(t)}          className="p-1.5 rounded-lg hover:bg-cream-100"           title="View">      <Eye   size={13} /></button>
-                                    <button onClick={() => handleEdit(t)}          className="p-1.5 rounded-lg hover:bg-cream-100"           title="Edit">      <Edit2 size={13} /></button>
-                                    <button onClick={() => handleDeleteRequest(t)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500" title="Deactivate"><Trash2 size={13} /></button>
+                                    {can("TABLE_MANAGE") && <button onClick={() => handleEdit(t)}          className="p-1.5 rounded-lg hover:bg-cream-100"           title="Edit">      <Edit2 size={13} /></button>}
+                                    {can("TABLE_MANAGE") && <button onClick={() => handleDeleteRequest(t)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500" title="Deactivate"><Trash2 size={13} /></button>}
                                   </div>
                                 </td>
                               </tr>

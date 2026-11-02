@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { X, Check, Upload, User as UserIcon } from "lucide-react";
+import { X, Check, Upload, User as UserIcon, ShieldCheck } from "lucide-react";
 import Modal from "../../../modal/Modal.jsx";
+import { getRoles } from "../../../api/role/role.api.js";
 
 /* Constants */
 const GENDER_OPTIONS = ["MALE", "FEMALE"];
@@ -16,6 +17,7 @@ const EMPTY_FORM = {
     status:       true,
     profileImage: "",
     password:     "", // only used on create
+    roles:        [], // role names, e.g. ["WAITER"]
 };
 
 /* Utility */
@@ -147,6 +149,63 @@ function AvatarUpload({ imageUrl, onChange, onClear }) {
     );
 }
 
+/** Selectable role cards — multi-select, driven by the enabled roles from the API. */
+function RolePicker({ roles, selected, loading, loadFailed, error, onToggle }) {
+    if (loading) {
+        return (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 animate-pulse">
+                {[0, 1, 2, 3].map((i) => <div key={i} className="h-14 rounded-xl bg-cream-100" />)}
+            </div>
+        );
+    }
+
+    if (loadFailed || roles.length === 0) {
+        return (
+            <p className="text-xs text-red-500 px-3 py-3 rounded-xl bg-red-50 border border-red-100">
+                {loadFailed ? "Could not load roles. Close and reopen this form to retry." : "No enabled roles available. Create a role first."}
+            </p>
+        );
+    }
+
+    return (
+        <div className="space-y-1.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {roles.map((role) => {
+                    const on = selected.includes(role.name);
+                    return (
+                        <button
+                            key={role.id}
+                            type="button"
+                            role="checkbox"
+                            aria-checked={on}
+                            onClick={() => onToggle(role.name)}
+                            className={`flex items-start gap-2.5 px-3 py-2.5 rounded-xl border text-left transition-colors ${
+                                on ? "bg-emerald-50/60 border-emerald-300" : "bg-cream-50 border-cream-200 hover:border-forest-300"
+                            }`}
+                        >
+                            <span className={`mt-0.5 w-4 h-4 rounded-md border flex items-center justify-center shrink-0 ${
+                                on ? "bg-forest-700 border-forest-700 text-white" : "bg-white border-cream-300"
+                            }`}>
+                                {on && <Check size={11} strokeWidth={3} />}
+                            </span>
+                            <span className="min-w-0">
+                                <span className="flex items-center gap-1.5 text-sm font-medium text-forest-900">
+                                    <ShieldCheck size={12} className={on ? "text-forest-700" : "text-gray-300"} />
+                                    <span className="truncate">{role.name}</span>
+                                </span>
+                                <span className="block text-xs text-gray-400 mt-0.5 line-clamp-2">
+                                    {role.description || "No description"}
+                                </span>
+                            </span>
+                        </button>
+                    );
+                })}
+            </div>
+            {error && <p className="text-xs text-red-500">{error}</p>}
+        </div>
+    );
+}
+
 /* Validation — mirrors ItemFormDrawer's validate() pattern */
 function validate(form, isEdit) {
     const errors = {};
@@ -168,6 +227,8 @@ function validate(form, isEdit) {
         errors.password = "Password must be at least 8 characters";
     }
 
+    if (form.roles.length === 0) errors.roles = "Assign at least one role";
+
     return errors;
 }
 
@@ -178,6 +239,23 @@ export default function UserFormDrawer({ open, onClose, onSubmit, user }) {
     const [form,   setForm]   = useState(EMPTY_FORM);
     const [errors, setErrors] = useState({});
     const [saving, setSaving] = useState(false);
+
+    const [roleOptions,  setRoleOptions]  = useState([]);
+    const [rolesLoading, setRolesLoading] = useState(false);
+    const [rolesFailed,  setRolesFailed]  = useState(false);
+
+    /* Load the assignable (enabled) roles each time the form opens. */
+    useEffect(() => {
+        if (!open) return;
+        let cancelled = false;
+        setRolesLoading(true);
+        setRolesFailed(false);
+        getRoles({ enabled: true, max: 100, sort: "name", order: "asc" })
+            .then((res) => { if (!cancelled) setRoleOptions(res?.data?.data || []); })
+            .catch(()   => { if (!cancelled) { setRoleOptions([]); setRolesFailed(true); } })
+            .finally(() => { if (!cancelled) setRolesLoading(false); });
+        return () => { cancelled = true; };
+    }, [open]);
 
     /* Populate form fields when the modal opens.
        Resets to empty state when adding a new user. */
@@ -194,6 +272,7 @@ export default function UserFormDrawer({ open, onClose, onSubmit, user }) {
             status:       user.status ? user.status === "ACTIVE" : true,
             profileImage: user.profileImage ?? "",
             password:     "",
+            roles:        [...(user.roles ?? [])],
         } : EMPTY_FORM);
         setErrors({});
     }, [open, user]);
@@ -208,6 +287,17 @@ export default function UserFormDrawer({ open, onClose, onSubmit, user }) {
     /* Toggle active status between true / false. */
     const toggleStatus = () =>
         setForm((prev) => ({ ...prev, status: !prev.status }));
+
+    /* Add or remove a role name from the selection. */
+    const toggleRole = (name) => {
+        setForm((prev) => ({
+            ...prev,
+            roles: prev.roles.includes(name)
+                ? prev.roles.filter((r) => r !== name)
+                : [...prev.roles, name],
+        }));
+        setErrors((prev) => ({ ...prev, roles: undefined }));
+    };
 
     /* Clear the selected avatar image from the form. */
     const clearImage = () =>
@@ -232,7 +322,9 @@ export default function UserFormDrawer({ open, onClose, onSubmit, user }) {
         try {
             const payload = {
                 ...form,
-                status: form.status ? "ACTIVE" : "INACTIVE",
+                status:  form.status ? "ACTIVE" : "INACTIVE",
+                enabled: user?.enabled ?? true,
+                dateOfBirth: form.dateOfBirth || null,
             };
             if (isEdit) delete payload.password; // never send blank password on edit
             await onSubmit(payload);
@@ -350,6 +442,19 @@ export default function UserFormDrawer({ open, onClose, onSubmit, user }) {
                             <option key={g} value={g}>{g.charAt(0) + g.slice(1).toLowerCase()}</option>
                         ))}
                     </select>
+                </Field>
+
+                <Divider label="Roles" />
+
+                <Field label="Assign roles" required>
+                    <RolePicker
+                        roles={roleOptions}
+                        selected={form.roles}
+                        loading={rolesLoading}
+                        loadFailed={rolesFailed}
+                        error={errors.roles}
+                        onToggle={toggleRole}
+                    />
                 </Field>
 
                 <Divider label="Access" />

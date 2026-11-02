@@ -69,15 +69,15 @@ export default function App() {
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="menu" element={<Navigate to="/admin/menu/items" replace />} />
-              <Route path="menu/items" element={<MenuItems />} />
-              <Route path="menu/categories" element={<Categories />} />
-              <Route path="menu/ingredients" element={<Ingredients />} />
-              <Route path="orders" element={<Orders />} />
-              <Route path="tables" element={<Tables />} />
+              <Route path="menu/items" element={<ProtectedRoute permission="MENU_VIEW"><MenuItems /></ProtectedRoute>} />
+              <Route path="menu/categories" element={<ProtectedRoute permission="MENU_VIEW"><Categories /></ProtectedRoute>} />
+              <Route path="menu/ingredients" element={<ProtectedRoute permission="MENU_VIEW"><Ingredients /></ProtectedRoute>} />
+              <Route path="orders" element={<ProtectedRoute permission="ORDER_VIEW"><Orders /></ProtectedRoute>} />
+              <Route path="tables" element={<ProtectedRoute permission="TABLE_VIEW"><Tables /></ProtectedRoute>} />
               <Route path="payment" element={<Payment />} />
               <Route path="settings" element={<Settings />} />
-              <Route path="settings/users" element={<Users />} />
-              <Route path="settings/roles" element={<Roles />} />
+              <Route path="settings/users" element={<ProtectedRoute permission="USER_MANAGE"><Users /></ProtectedRoute>} />
+              <Route path="settings/roles" element={<ProtectedRoute permission="ROLE_MANAGE"><Roles /></ProtectedRoute>} />
               <Route path="profile" element={<UserProfile />} />
             </Route>
 

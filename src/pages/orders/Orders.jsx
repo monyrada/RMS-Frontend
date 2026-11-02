@@ -16,6 +16,7 @@ import {
 
 import Pagination from "../../components/shared/pagination";
 import { useToast } from "../../components/ui/Toast.jsx";
+import { useAuth } from "../../context/AuthContext";
 import ConfirmDialog from "../../components/ui/ConfirmDialog.jsx";
 import OrderFormModal from "../../components/common/order/modals/OrderFormModal.jsx";
 import OrderDetailModal from "../../components/common/order/modals/OrderDetailModal.jsx";
@@ -140,6 +141,7 @@ function isTerminalStatus(status) {
  * ========================================================= */
 
 function OrderCard({ order, onClick, onCancel }) {
+  const { can } = useAuth();
   const elapsedMin = order.createdAtRaw
       ? Math.floor(
           (Date.now() - new Date(order.createdAtRaw).getTime()) / 60000
@@ -224,7 +226,7 @@ function OrderCard({ order, onClick, onCancel }) {
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
-          {!isTerminalStatus(order.status) && (
+          {can("ORDER_DELETE") && !isTerminalStatus(order.status) && (
               <button
                   onClick={(e) => { e.stopPropagation(); onCancel?.(order); }}
                   title="Cancel order"
@@ -358,6 +360,7 @@ function FilterBar({ source, sortKey, onChange, onClear, show }) {
  * ========================================================= */
 
 export default function Orders() {
+  const { can } = useAuth();
   const toast = useToast();
 
   const [orders, setOrders] = useState([]);
@@ -609,6 +612,7 @@ export default function Orders() {
             </button>
 
             {/* New order */}
+            {can("ORDER_CREATE") && (
             <button
                 onClick={handleAddOrder}
                 className="btn-primary flex items-center gap-1.5 text-xs py-2 px-3"
@@ -616,6 +620,7 @@ export default function Orders() {
               <Plus size={13} />
               <span className="hidden sm:inline">New Order</span>
             </button>
+            )}
           </div>
 
           <FilterBar
@@ -803,7 +808,7 @@ export default function Orders() {
                                 >
                                   <Eye size={13} />
                                 </button>
-                                {!isTerminalStatus(order.status) && (
+                                {can("ORDER_DELETE") && !isTerminalStatus(order.status) && (
                                     <button
                                         onClick={() => handleRequestCancel(order)}
                                         className="p-1.5 rounded-lg hover:bg-red-50 text-red-500"

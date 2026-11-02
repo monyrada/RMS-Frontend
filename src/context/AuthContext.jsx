@@ -45,8 +45,17 @@ export function AuthProvider({ children }) {
     sessionStorage.removeItem("rms_user");
   };
 
+  // Permission codes come from the backend at login (user.permissions).
+  // No required code means the check always passes; several codes pass when any is held.
+  const can = (...required) => {
+    const codes = required.flat().filter(Boolean);
+    if (codes.length === 0) return true;
+    const held = user?.permissions || [];
+    return codes.some((code) => held.includes(code));
+  };
+
   return (
-      <AuthContext.Provider value={{ user, login, logout }}>
+      <AuthContext.Provider value={{ user, login, logout, can }}>
         {children}
       </AuthContext.Provider>
   );

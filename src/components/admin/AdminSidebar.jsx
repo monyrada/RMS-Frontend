@@ -16,29 +16,40 @@ import {
     X,
     Users, ShieldCheck,
 } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const menuChildren = [
-    { label: "Items", to: "/admin/menu/items", icon: List },
-    { label: "Categories", to: "/admin/menu/categories", icon: Tag },
-    { label: "Ingredients", to: "/admin/menu/ingredients", icon: FlaskConical },
+    { label: "Items", to: "/admin/menu/items", icon: List, permission: "MENU_VIEW" },
+    { label: "Categories", to: "/admin/menu/categories", icon: Tag, permission: "MENU_VIEW" },
+    { label: "Ingredients", to: "/admin/menu/ingredients", icon: FlaskConical, permission: "MENU_VIEW" },
 ];
 
 const settingsChildren = [
-    { label: "Users", to: "/admin/settings/users", icon: Users },
-    { label: "Roles", to: "/admin/settings/roles", icon: ShieldCheck },
+    { label: "Users", to: "/admin/settings/users", icon: Users, permission: "USER_MANAGE" },
+    { label: "Roles", to: "/admin/settings/roles", icon: ShieldCheck, permission: "ROLE_MANAGE" },
 ];
 
 const navItems = [
     { label: "Dashboard", to: "/admin/dashboard", icon: LayoutDashboard },
     { label: "Menu", icon: UtensilsCrossed, children: menuChildren },
-    { label: "Orders", to: "/admin/orders", icon: ShoppingBag },
-    { label: "Tables", to: "/admin/tables", icon: LayoutGrid },
+    { label: "Orders", to: "/admin/orders", icon: ShoppingBag, permission: "ORDER_VIEW" },
+    { label: "Tables", to: "/admin/tables", icon: LayoutGrid, permission: "TABLE_VIEW" },
     { label: "Payment", to: "/admin/payment", icon: CreditCard },
     { label: "Settings", icon: Settings, children: settingsChildren },
 ];
 
 function SidebarContent({ onClose }) {
     const location = useLocation();
+    const { can } = useAuth();
+
+    // Drop items the user can't view, and parents left with no visible children
+    const visibleItems = navItems
+        .map((item) =>
+            item.children
+                ? { ...item, children: item.children.filter((c) => can(c.permission)) }
+                : item
+        )
+        .filter((item) => (item.children ? item.children.length > 0 : can(item.permission)));
 
     // Open submenu based on current route
     const [openMenu, setOpenMenu] = useState(() => {
@@ -102,7 +113,7 @@ function SidebarContent({ onClose }) {
                     Navigation
                 </p>
 
-                {navItems.map((item) => {
+                {visibleItems.map((item) => {
                     if (item.children) {
                         const active = isParentActive(item.children);
 

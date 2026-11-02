@@ -14,6 +14,8 @@ import { getMenus, createMenu, updateMenu, deleteMenu } from "../../../api/menu/
 import { getCategories } from "../../../api/menu/category.api";
 
 /* Constants  */
+import { useAuth } from "../../../context/AuthContext";
+
 const DEBOUNCE_MS = 300;
 
 const STATUS_OPTIONS = [
@@ -163,6 +165,7 @@ function FilterBar({ statusFilter, minPrice, maxPrice, onChange, onClear, show }
 }
 
 function ItemCard({ item, onView, onEdit, onDelete }) {
+  const { can } = useAuth();
   return (
       <div className="card p-4 flex gap-3">
         <ItemImage imageUrl={item.imageUrl} size="lg" />
@@ -179,8 +182,8 @@ function ItemCard({ item, onView, onEdit, onDelete }) {
         </div>
         <div className="flex flex-col gap-1 shrink-0">
           <button onClick={() => onView(item)}   className="p-1.5 rounded-lg hover:bg-cream-100"           title="View">  <Eye   size={13} /></button>
-          <button onClick={() => onEdit(item)}   className="p-1.5 rounded-lg hover:bg-cream-100"           title="Edit">  <Edit2 size={13} /></button>
-          <button onClick={() => onDelete(item)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500" title="Delete"><Trash2 size={13} /></button>
+          {can("MENU_MANAGE") && <button onClick={() => onEdit(item)}   className="p-1.5 rounded-lg hover:bg-cream-100"           title="Edit">  <Edit2 size={13} /></button>}
+          {can("MENU_MANAGE") && <button onClick={() => onDelete(item)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500" title="Delete"><Trash2 size={13} /></button>}
         </div>
       </div>
   );
@@ -189,6 +192,7 @@ function ItemCard({ item, onView, onEdit, onDelete }) {
 /* Main Component */
 
 export default function MenuItems() {
+  const { can } = useAuth();
   const toast = useToast();
 
   /* List */
@@ -389,9 +393,11 @@ export default function MenuItems() {
               </button>
 
               {/* Add */}
+              {can("MENU_MANAGE") && (
               <button onClick={handleAdd} className="btn-primary flex items-center gap-1.5 shrink-0 whitespace-nowrap">
                 <Plus size={14} /> <span>Add Item</span>
               </button>
+              )}
             </div>
 
             {/* Row 2 — category pills */}
@@ -490,8 +496,8 @@ export default function MenuItems() {
                               <td className="table-td">
                                 <div className="flex justify-end gap-1.5">
                                   <button onClick={() => handleView(item)}          className="p-1.5 rounded-lg hover:bg-cream-100"           title="View">  <Eye   size={13} /></button>
-                                  <button onClick={() => handleEdit(item)}          className="p-1.5 rounded-lg hover:bg-cream-100"           title="Edit">  <Edit2 size={13} /></button>
-                                  <button onClick={() => handleDeleteRequest(item)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500" title="Delete"><Trash2 size={13} /></button>
+                                  {can("MENU_MANAGE") && <button onClick={() => handleEdit(item)}          className="p-1.5 rounded-lg hover:bg-cream-100"           title="Edit">  <Edit2 size={13} /></button>}
+                                  {can("MENU_MANAGE") && <button onClick={() => handleDeleteRequest(item)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500" title="Delete"><Trash2 size={13} /></button>}
                                 </div>
                               </td>
                             </tr>

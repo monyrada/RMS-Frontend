@@ -26,7 +26,20 @@ apiClient.interceptors.request.use(
 
 // Response Interceptor
 apiClient.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        // The backend answers business errors (400, 403, ...) with HTTP 200 and the
+        // real code in the body. Reject them so callers' catch blocks run. A GET 404
+        // is the "empty list" signal, so it stays a normal response.
+        const code = Number(response.data?.statusCode);
+        const isEmptyList = response.config.method === "get" && code === 404;
+        if (code >= 400 && !isEmptyList) {
+            const err = new Error(response.data.error || response.data.message || "Request failed");
+            err.response = response;
+            err.config = response.config;
+            return Promise.reject(err);
+        }
+        return response;
+    },
     (error) => {
         // Only force a login redirect when the failed request was actually
         // authenticated (i.e. an admin session expired/was revoked). Customer

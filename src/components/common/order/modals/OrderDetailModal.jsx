@@ -4,6 +4,7 @@ import Modal from "../../../../modal/Modal.jsx";
 import MenuItemPicker from "../MenuItemPicker.jsx";
 import { orderStatusConfig, TERMINAL_ORDER_STATUSES } from "../orderStatus.js";
 import { useToast } from "../../../ui/Toast.jsx";
+import { useAuth } from "../../../../context/AuthContext";
 import {
     getOrderById,
     addOrderItem,
@@ -46,6 +47,7 @@ function normalizeOrder(o) {
 }
 
 export default function OrderDetailModal({ open, orderId, onClose, onEdit, onRequestCancel, onChanged }) {
+    const { can } = useAuth();
     const toast = useToast();
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -173,7 +175,7 @@ export default function OrderDetailModal({ open, orderId, onClose, onEdit, onReq
                                                     <p className="text-xs text-gray-400">{formatCurrency(item.price)} each</p>
                                                 </div>
 
-                                                {!isTerminal && (
+                                                {!isTerminal && can("ORDER_UPDATE") && (
                                                     <div className="flex items-center gap-1.5 shrink-0">
                                                         <button
                                                             type="button"
@@ -206,7 +208,7 @@ export default function OrderDetailModal({ open, orderId, onClose, onEdit, onReq
                                                     </div>
                                                 )}
 
-                                                {isTerminal && (
+                                                {(isTerminal || !can("ORDER_UPDATE")) && (
                                                     <span className="w-14 text-right text-sm font-bold text-forest-800 shrink-0">
                                                         {formatCurrency(item.price * item.quantity)}
                                                     </span>
@@ -217,7 +219,7 @@ export default function OrderDetailModal({ open, orderId, onClose, onEdit, onReq
                                 </div>
                             )}
 
-                            {!isTerminal && (
+                            {!isTerminal && can("ORDER_UPDATE") && (
                                 <div className="mt-3">
                                     <MenuItemPicker onAdd={handleAddItem} />
                                     {addingItem && (
@@ -245,7 +247,7 @@ export default function OrderDetailModal({ open, orderId, onClose, onEdit, onReq
 
                     {/* Footer */}
                     <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-xl flex justify-end gap-3">
-                        {!isTerminal && (
+                        {!isTerminal && can("ORDER_DELETE") && (
                             <button
                                 onClick={() => onRequestCancel?.(order)}
                                 className="px-4 py-2 text-sm font-medium rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
@@ -253,6 +255,7 @@ export default function OrderDetailModal({ open, orderId, onClose, onEdit, onReq
                                 Cancel order
                             </button>
                         )}
+                        {can("ORDER_UPDATE") && (
                         <button
                             onClick={() => onEdit?.(order)}
                             className="px-5 py-2 text-sm font-medium rounded-lg text-white transition-colors"
@@ -262,6 +265,7 @@ export default function OrderDetailModal({ open, orderId, onClose, onEdit, onReq
                         >
                             Edit order
                         </button>
+                        )}
                     </div>
                 </>
             ) : (

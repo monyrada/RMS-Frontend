@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { Check, ShieldCheck } from "lucide-react";
 import Modal from "../../../modal/Modal.jsx";
+import { getPermissions } from "../../../api/role/role.api.js";
 
 /* Constants */
 const EMPTY_FORM = {
     name:        "",
     description: "",
     enabled:     true,
+    permissions: [],
 };
 
 /* Utility */
@@ -91,6 +93,29 @@ function StatusToggle({ value, onToggle }) {
     );
 }
 
+/** Checkbox list of every grantable permission. */
+function PermissionPicker({ all, selected, onToggle }) {
+    if (!all.length) return <p className="text-xs text-gray-400">No permissions available.</p>;
+    return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {all.map((p) => (
+                <label key={p.code} className="flex items-start gap-2.5 px-3 py-2 rounded-xl border border-cream-200 bg-cream-50 cursor-pointer hover:bg-cream-100">
+                    <input
+                        type="checkbox"
+                        checked={selected.includes(p.code)}
+                        onChange={() => onToggle(p.code)}
+                        className="mt-0.5 accent-forest-700"
+                    />
+                    <span>
+                        <span className="block text-xs font-medium text-gray-700">{p.code}</span>
+                        {p.description && <span className="block text-[11px] text-gray-400">{p.description}</span>}
+                    </span>
+                </label>
+            ))}
+        </div>
+    );
+}
+
 /** Circular icon preview — static placeholder in place of AvatarUpload (roles have no image). */
 function RoleIconPreview() {
     return (
@@ -125,6 +150,15 @@ export default function RoleFormDrawer({ open, onClose, onSubmit, role }) {
     const [form,   setForm]   = useState(EMPTY_FORM);
     const [errors, setErrors] = useState({});
     const [saving, setSaving] = useState(false);
+    const [allPermissions, setAllPermissions] = useState([]);
+
+    /* Load the grantable permissions each time the drawer opens. */
+    useEffect(() => {
+        if (!open) return;
+        getPermissions()
+            .then(({ data: body }) => setAllPermissions(body?.data ?? []))
+            .catch(() => setAllPermissions([]));
+    }, [open]);
 
     /* Populate form fields when the modal opens.
        Resets to empty state when adding a new role. */
@@ -134,6 +168,7 @@ export default function RoleFormDrawer({ open, onClose, onSubmit, role }) {
             name:        role.name        ?? "",
             description: role.description ?? "",
             enabled:     role.enabled     ?? true,
+            permissions: [...(role.permissions ?? [])],
         } : EMPTY_FORM);
         setErrors({});
     }, [open, role]);
@@ -148,6 +183,14 @@ export default function RoleFormDrawer({ open, onClose, onSubmit, role }) {
     /* Toggle enabled status between true / false. */
     const toggleEnabled = () =>
         setForm((prev) => ({ ...prev, enabled: !prev.enabled }));
+
+    const togglePermission = (code) =>
+        setForm((prev) => ({
+            ...prev,
+            permissions: prev.permissions.includes(code)
+                ? prev.permissions.filter((c) => c !== code)
+                : [...prev.permissions, code],
+        }));
 
     /* Run validation, then call onSubmit with the cleaned form data. */
     const handleSubmit = async () => {
@@ -202,6 +245,14 @@ export default function RoleFormDrawer({ open, onClose, onSubmit, role }) {
 
                 {/* Enabled toggle */}
                 <StatusToggle value={form.enabled} onToggle={toggleEnabled} />
+
+                <Divider label="Permissions" />
+
+                <PermissionPicker
+                    all={allPermissions}
+                    selected={form.permissions}
+                    onToggle={togglePermission}
+                />
 
             </div>
 

@@ -20,6 +20,8 @@ import {
 } from "../../../api/menu/ingredient.api.js";
 
 /* Constants */
+import { useAuth } from "../../../context/AuthContext";
+
 const DEBOUNCE_MS = 300;
 
 const STATUS_OPTIONS = [
@@ -105,6 +107,7 @@ function FilterBar({ statusFilter, onChange, onClear, show }) {
 }
 
 function IngredientCard({ ingredient, onView, onEdit, onDelete }) {
+  const { can } = useAuth();
     return (
         <div className="card p-4 flex gap-3">
             <IngredientIcon size="lg" />
@@ -125,8 +128,8 @@ function IngredientCard({ ingredient, onView, onEdit, onDelete }) {
             </div>
             <div className="flex flex-col gap-1 shrink-0">
                 <button onClick={() => onView(ingredient)}   className="p-1.5 rounded-lg hover:bg-cream-100"           title="View">  <Eye   size={13} /></button>
-                <button onClick={() => onEdit(ingredient)}   className="p-1.5 rounded-lg hover:bg-cream-100"           title="Edit">  <Edit2 size={13} /></button>
-                <button onClick={() => onDelete(ingredient)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500" title="Delete"><Trash2 size={13} /></button>
+                {can("MENU_MANAGE") && <button onClick={() => onEdit(ingredient)}   className="p-1.5 rounded-lg hover:bg-cream-100"           title="Edit">  <Edit2 size={13} /></button>}
+                {can("MENU_MANAGE") && <button onClick={() => onDelete(ingredient)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500" title="Delete"><Trash2 size={13} /></button>}
             </div>
         </div>
     );
@@ -135,6 +138,7 @@ function IngredientCard({ ingredient, onView, onEdit, onDelete }) {
 /* Main Component */
 
 export default function Ingredients() {
+  const { can } = useAuth();
     const toast = useToast();
 
     /* List */
@@ -345,9 +349,11 @@ export default function Ingredients() {
                         </button>
 
                         {/* Add */}
+                        {can("MENU_MANAGE") && (
                         <button onClick={handleAdd} className="btn-primary flex items-center gap-1.5 shrink-0 whitespace-nowrap">
                             <Plus size={14} /> <span>Add Ingredient</span>
                         </button>
+                        )}
                     </div>
 
                     {/* Row 2 — advanced filter bar (collapsible) */}
@@ -456,8 +462,8 @@ export default function Ingredients() {
                                             <td className="table-td">
                                                 <div className="flex justify-end gap-1.5">
                                                     <button onClick={() => handleView(ing)}          className="p-1.5 rounded-lg hover:bg-cream-100"           title="View">  <Eye   size={13} /></button>
-                                                    <button onClick={() => handleEdit(ing)}          className="p-1.5 rounded-lg hover:bg-cream-100"           title="Edit">  <Edit2 size={13} /></button>
-                                                    <button onClick={() => handleDeleteRequest(ing)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500" title="Delete"><Trash2 size={13} /></button>
+                                                    {can("MENU_MANAGE") && <button onClick={() => handleEdit(ing)}          className="p-1.5 rounded-lg hover:bg-cream-100"           title="Edit">  <Edit2 size={13} /></button>}
+                                                    {can("MENU_MANAGE") && <button onClick={() => handleDeleteRequest(ing)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500" title="Delete"><Trash2 size={13} /></button>}
                                                 </div>
                                             </td>
                                         </tr>

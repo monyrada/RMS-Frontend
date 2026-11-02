@@ -44,6 +44,20 @@ const formatDate = (iso) => {
     return d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
 };
 
+/* Subcomponent — role chips (names come from the API as a string array) */
+function RoleChips({ roles }) {
+    if (!roles?.length) return <span className="text-xs text-gray-300">No role</span>;
+    return (
+        <div className="flex flex-wrap gap-1">
+            {roles.map((r) => (
+                <span key={r} className="px-2 py-0.5 rounded-full bg-cream-100 border border-cream-200 text-[11px] font-medium text-forest-800">
+                    {r}
+                </span>
+            ))}
+        </div>
+    );
+}
+
 /** How many advanced filters (status / gender) are active */
 const countActive = ({ statusFilter, genderFilter }) =>
     [statusFilter, genderFilter].filter(Boolean).length;
@@ -77,6 +91,7 @@ function SkeletonRows({ count = 8 }) {
             <td className="table-td"><div className="w-8 h-8 rounded-full bg-cream-200" /></td>
             <td className="table-td"><div className="h-3 bg-cream-200 rounded w-32" /></td>
             <td className="table-td hidden sm:table-cell"><div className="h-3 bg-cream-200 rounded w-40" /></td>
+            <td className="table-td"><div className="h-5 bg-cream-200 rounded-full w-16" /></td>
             <td className="table-td hidden md:table-cell"><div className="h-3 bg-cream-200 rounded w-28" /></td>
             <td className="table-td hidden lg:table-cell"><div className="h-3 bg-cream-200 rounded w-16" /></td>
             <td className="table-td"><div className="h-5 bg-cream-200 rounded-full w-20" /></td>
@@ -163,6 +178,7 @@ function UserCard({ user, onView, onEdit, onDelete }) {
                         <Phone size={11} className="shrink-0" /> {user.phoneNumber}
                     </p>
                 )}
+                <div className="mt-2"><RoleChips roles={user.roles} /></div>
             </div>
             <div className="flex flex-col gap-1 shrink-0">
                 <button onClick={() => onView(user)}   className="p-1.5 rounded-lg hover:bg-cream-100"           title="View">  <Eye   size={13} /></button>
@@ -269,8 +285,8 @@ export default function UserManagement() {
             }
             await loadUsers();
             handleCloseDrawer();
-        } catch {
-            toast.error("Save failed", "Please check your inputs and try again.");
+        } catch (err) {
+            toast.error("Save failed", err.response?.data?.error || "Please check your inputs and try again.");
         }
     };
 
@@ -284,8 +300,8 @@ export default function UserManagement() {
             toast.success("User deleted", `"${deleteTarget.name}" was removed.`);
             // Reload instead of mutating local state — keeps total count accurate
             await loadUsers();
-        } catch {
-            toast.error("Delete failed", "Could not delete the user. Please try again.");
+        } catch (err) {
+            toast.error("Delete failed", err.response?.data?.error || "Could not delete the user. Please try again.");
         } finally {
             setDeleteLoading(false);
             setDeleteTarget(null);
@@ -405,12 +421,13 @@ export default function UserManagement() {
                     /* ── Table view ── */
                     <div className="card p-0 overflow-hidden">
                         <div className="overflow-x-auto">
-                            <table className="w-full min-w-[700px]">
+                            <table className="w-full min-w-[800px]">
                                 <thead className="border-b border-cream-200">
                                 <tr>
                                     <th className="table-th w-10" />
                                     <th className="table-th">Name</th>
                                     <th className="table-th hidden sm:table-cell">Email</th>
+                                    <th className="table-th">Roles</th>
                                     <th className="table-th hidden md:table-cell">Phone</th>
                                     <th className="table-th hidden lg:table-cell">Gender</th>
                                     <th className="table-th">Status</th>
@@ -433,6 +450,7 @@ export default function UserManagement() {
                                             </td>
 
                                             <td className="table-td hidden sm:table-cell text-sm text-gray-600">{user.email}</td>
+                                            <td className="table-td"><RoleChips roles={user.roles} /></td>
                                             <td className="table-td hidden md:table-cell text-sm text-gray-500 whitespace-nowrap">{user.phoneNumber || "—"}</td>
                                             <td className="table-td hidden lg:table-cell text-sm text-gray-500 capitalize">{user.gender?.toLowerCase() || "—"}</td>
 

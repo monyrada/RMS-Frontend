@@ -11,7 +11,7 @@ import ConfirmDialog    from "../../../components/ui/ConfirmDialog.jsx";
 import { useToast }     from "../../../components/ui/Toast.jsx";
 
 import {
-    getRoles, createRole, updateRole, deleteRole,
+    getRoles, createRole, updateRole, deleteRole, updateRolePermissions,
 } from "../../../api/role/role.api.js";
 
 /* Constants */
@@ -210,17 +210,23 @@ export default function RoleManagement() {
 
     const handleSubmit = async (formData) => {
         try {
+            const { permissions, ...roleData } = formData;
+            let roleId = selectedRole?.id;
             if (selectedRole) {
-                await updateRole(selectedRole.id, formData);
-                toast.success("Role updated", `"${formData.name}" was saved successfully.`);
+                await updateRole(roleId, roleData);
             } else {
-                await createRole(formData);
-                toast.success("Role added", `"${formData.name}" was created successfully.`);
+                const { data: body } = await createRole(roleData);
+                roleId = body?.data?.id;
             }
+            if (roleId && permissions) await updateRolePermissions(roleId, permissions);
+            toast.success(
+                selectedRole ? "Role updated" : "Role added",
+                `"${formData.name}" was ${selectedRole ? "saved" : "created"} successfully.`
+            );
             await loadRoles();
             handleCloseDrawer();
-        } catch {
-            toast.error("Save failed", "Please check your inputs and try again.");
+        } catch (err) {
+            toast.error("Save failed", err.response?.data?.error || "Please check your inputs and try again.");
         }
     };
 
@@ -234,8 +240,8 @@ export default function RoleManagement() {
             toast.success("Role deleted", `"${deleteTarget.name}" was removed.`);
             // Reload instead of mutating local state — keeps total count accurate
             await loadRoles();
-        } catch {
-            toast.error("Delete failed", "Could not delete the role. Please try again.");
+        } catch (err) {
+            toast.error("Delete failed", err.response?.data?.error || "Could not delete the role. Please try again.");
         } finally {
             setDeleteLoading(false);
             setDeleteTarget(null);

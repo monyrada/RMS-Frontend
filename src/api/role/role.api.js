@@ -20,9 +20,12 @@ export const createRole = (data) => apiClient.post("/roles", data);
 /** PUT /api/roles/:id */
 export const updateRole = (id, data) => apiClient.put(`/roles/${id}`, data);
 
-/** PATCH /api/roles/:id/status  { enabled: true | false } */
-export const updateRoleStatus = (id, enabled) =>
-    apiClient.patch(`/roles/${id}/status`, { enabled });
+/** GET /api/v1/permissions — every permission that can be granted to a role */
+export const getPermissions = () => apiClient.get("/permissions");
+
+/** PUT /api/v1/roles/:id/permissions  { permissions: ["ORDER_VIEW", ...] } — replaces the role's set */
+export const updateRolePermissions = (id, permissions) =>
+    apiClient.put(`/roles/${id}/permissions`, { permissions });
 
 /** DELETE /api/roles/:id */
 export const deleteRole = (id) => apiClient.delete(`/roles/${id}`);
